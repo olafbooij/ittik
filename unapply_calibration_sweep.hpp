@@ -1,6 +1,7 @@
-#pragma once
-
+#include<fstream>
+#include<iostream>
 #include<Eigen/Core>
+
 #include<calibration_kitti.hpp>
 #include<unapply_calibration.hpp>
 
@@ -10,17 +11,20 @@ struct Probe
   double intensity;
 };
 
-struct Scan
+// get the probe order based vertical angle
+auto determine_probe_order(const Calibration calibration)
 {
-  double position;
-  std::array<Probe, 64> probes;
-};
+  std::array<std::size_t, calibration.size()> perm;
+  for(size_t i = 0; i < calibration.size(); ++i) perm.at(i) = i;
+  std::sort(perm.begin(), perm.end(), [&calibration](auto a, auto b){return calibration.at(a).vertCorrection < calibration.at(b).vertCorrection;});
+  return perm;
+}
 
-//auto measurementToPointScan(const int laserNum, const Scan& scan, const Calibration& calib)
-//{
-//  auto nr_of_probes = 64;
-//  auto probeId = laserNum % nr_of_probes;
-//  const auto& cal = calib.at(probeId);
-//  return measurementToPoint(scan.position, scan.probes.at(probeId).distance, calib.at(probeId));
-//}
+int main(int argc, char* argv[])
+{
+  auto probe_order = determine_probe_order(kitti_probe_calibration());
+  std::cout << probe_order.size() << std::endl;
+  for(auto probe_id: probe_order)
+    std::cout << probe_id << std::endl;
+}
 
