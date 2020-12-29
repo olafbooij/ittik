@@ -75,6 +75,6 @@ namespace nonsi {
 }
 auto kitti_probe_calibration()
 {
-  return common_units(kitti__probe_calibration);
+  return common_units(nonsi::kitti__probe_calibration());
 }
 

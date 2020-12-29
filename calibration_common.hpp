@@ -1,6 +1,8 @@
 #pragma once
 
 #include<array>
+#include<cmath>
+
 struct ProbeCalibration
 {
   double rotCorrection; // radians
