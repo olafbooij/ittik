@@ -11,7 +11,7 @@ auto determine_probe_order(const Calibration calibration)
 {
   std::array<std::size_t, calibration.size()> perm;
   for(size_t i = 0; i < calibration.size(); ++i) perm.at(i) = i;
-  std::sort(perm.begin(), perm.end(), [&calibration](auto a, auto b){return calibration.at(a).vertCorrection < calibration.at(b).vertCorrection;});
+  std::sort(perm.begin(), perm.end(), [&calibration](auto a, auto b){return calibration.at(a).vertCorrection > calibration.at(b).vertCorrection;});
   return perm;
 }
 
