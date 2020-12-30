@@ -1,5 +1,6 @@
 #pragma once
 
+#include<iostream>
 #include<Eigen/Core>
 #include<calibration_common.hpp>
 
