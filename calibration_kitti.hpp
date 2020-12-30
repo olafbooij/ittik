@@ -1,7 +1,8 @@
 #pragma once
 #include<calibration_common.hpp>
 
-// values taken from velodynecalib_S2_factory_flatness_intensity (...I think from the kitti website...)
+// values taken from http://www.cvlibs.net/datasets/kitti/downloads/velodynecalib_S2_factory_flatness_intensity.xml
+// as pointed to in http://www.cvlibs.net/datasets/kitti/raw_data.php
 namespace nonsi {
   auto kitti__probe_calibration()
   {
