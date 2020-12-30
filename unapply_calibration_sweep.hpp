@@ -37,9 +37,10 @@ struct Sweep_uncalibrator
       horizontal_angle_prev_ = horizontal_angle;
     }
     auto probe_id = probe_order_.at(vert_id_);
-    auto probe_data = pointToMeasurement(point, kitti_probe_calibration().at(probe_id));
+    Eigen::Vector3d point_velodyne{point(0), point(1), point(2)};
+    auto probe_data = pointToMeasurement(point_velodyne, kitti_probe_calibration().at(probe_id));
 
-    return std::make_tuple(probe_id, probe_data.first, probe_data.second);
+    return std::make_tuple(probe_id, probe_data.first, probe_data.second, vert_id_);
   }
 
 };

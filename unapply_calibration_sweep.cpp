@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
   while(sweep_file >> point(0) >> point(1) >> point(2) >> refl)
   {
     auto probe_data = sweep_uncalibrator(point);
-    out_file << std::get<0>(probe_data) << " " << std::get<1>(probe_data) << " " << std::get<2>(probe_data) << std::endl;
+    out_file << std::get<0>(probe_data) << " " << std::get<1>(probe_data) << " " << std::get<2>(probe_data) << " " << std::get<3>(probe_data) << std::endl;
   }
 
   return 0;
