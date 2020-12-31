@@ -5,6 +5,8 @@
 #include<apply_calibration.hpp>
 #include<unapply_calibration.hpp>
 
+#include<calibration_kitti.hpp>
+
 int main(/*int argc, char* argv[]*/)
 {
   //std::cout << measurementToPoint(2.1, 4.3, example_probe_calibration()).transpose() << std::endl;
@@ -23,6 +25,16 @@ int main(/*int argc, char* argv[]*/)
   assert(fabs(pointToMeasurement(measurementToPoint(3.14, 19.3, example_probe_calibration()), example_probe_calibration()).second - 19.3) < 1e-4);
   assert(fabs(pointToMeasurement(measurementToPoint(3.15, 19.3, example_probe_calibration()), example_probe_calibration()).second - 19.3) < 1e-4);
   assert(fabs(pointToMeasurement(measurementToPoint(6.15, 19.3, example_probe_calibration()), example_probe_calibration()).second - 19.3) < 1e-4);
+  {
+    Eigen::Vector3d point{41.081, 12.512, 1.661};
+    auto meas = pointToMeasurement(point, kitti_probe_calibration().at(29));
+    std::cout << meas.first << " " << meas.second << std::endl;
+    auto point_again = measurementToPoint(meas.first, meas.second, kitti_probe_calibration().at(29));
+    std::cout << point.transpose() << std::endl;
+    std::cout << point_again.transpose() << std::endl;
+    std::cout << (point - point_again).norm() << std::endl;
+  }
+
   return 0;
 }
 

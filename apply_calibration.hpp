@@ -29,9 +29,9 @@ Eigen::Vector3d measurementToPoint(const double position, const double distance_
   point(0) = xyDistance_x_corrected * sinRotAngle - cal.horizOffsetCorrection * cosRotAngle;
 
   auto distance_y_corrected = distance_uncor + distanceCorrY;
-
   auto xyDistance_y_corrected = distance_y_corrected * cosVertAngle;
   point(1) = xyDistance_y_corrected * cosRotAngle + cal.horizOffsetCorrection * sinRotAngle;
+
   point(2) = distance_y_corrected * sinVertAngle + cal.vertOffsetCorrection; // yes distance_y_corrected is used
 
   return point;
