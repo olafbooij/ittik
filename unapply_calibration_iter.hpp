@@ -34,13 +34,15 @@ auto pointToMeasurement_iter(const Eigen::Vector3d point, const ProbeCalibration
 
     // use the point to compute a more accurate position and distance
     auto sin_new_rotCorrected = (point(0) + cal.horizOffsetCorrection * cosRotAngle) / xyDistance_x_corrected;
-    auto cos_new_rotCorrected = (point(1) + cal.horizOffsetCorrection * sinRotAngle) / xyDistance_y_corrected;
+    auto cos_new_rotCorrected = (point(1) - cal.horizOffsetCorrection * sinRotAngle) / xyDistance_y_corrected;
     rotCorrected = atan2(sin_new_rotCorrected, cos_new_rotCorrected);
 
-    if(point(0) > point(1))
+    if(fabs(point(0)) > fabs(point(1)))
       distance_uncor = (point(0) + cal.horizOffsetCorrection * cosRotAngle) / (cosVertAngle * sinRotAngle) - distanceCorrX;
     else
       distance_uncor = (point(1) + cal.horizOffsetCorrection * sinRotAngle) / (cosVertAngle * cosRotAngle) - distanceCorrY;
+
+    //distance_uncor = (point(2) - cal.vertOffsetCorrection) / sinVertAngle - distanceCorrY;
 
     position = rotCorrected + cal.rotCorrection;
   }
