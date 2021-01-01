@@ -5,6 +5,7 @@
 
 #include<calibration_kitti.hpp>
 #include<unapply_calibration.hpp>
+#include<unapply_calibration_iter.hpp>
 #include<apply_calibration.hpp>
 
 // get the probe order based vertical angle
@@ -39,10 +40,13 @@ struct Sweep_uncalibrator
     }
     auto probe_id = probe_order_.at(vert_id_);
     Eigen::Vector3d point_velodyne{point(0), point(1), point(2)};
-    auto probe_data = pointToMeasurement(point_velodyne, kitti_probe_calibration().at(probe_id));
+    auto probe_data = pointToMeasurement_iter(point_velodyne, kitti_probe_calibration().at(probe_id));
     auto point_again = measurementToPoint(probe_data.first, probe_data.second, kitti_probe_calibration().at(probe_id));
 
-    std::cout << probe_id << " " << point.transpose() << " " << (point_velodyne - point_again).norm() << std::endl;
+    std::cout.precision(7);
+    std::cout << probe_id << " " << point_velodyne.transpose() << " " << probe_data.first << " " << probe_data.second << " " << (point_velodyne - point_again).norm()
+              << " " << fabs(atan2(point_velodyne(0), point_velodyne(1)) - atan2(point_again(0), point_again(1)))
+              << std::endl;
 
     return std::make_tuple(probe_id, probe_data.first, probe_data.second, vert_id_);
   }

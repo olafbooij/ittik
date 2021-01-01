@@ -26,6 +26,7 @@ int main(/*int argc, char* argv[]*/)
   assert(fabs(pointToMeasurement(measurementToPoint(3.14, 19.3, example_probe_calibration()), example_probe_calibration()).second - 19.3) < 1e-4);
   assert(fabs(pointToMeasurement(measurementToPoint(3.15, 19.3, example_probe_calibration()), example_probe_calibration()).second - 19.3) < 1e-4);
   assert(fabs(pointToMeasurement(measurementToPoint(6.15, 19.3, example_probe_calibration()), example_probe_calibration()).second - 19.3) < 1e-4);
+  if(0)
   {
     Eigen::Vector3d point{41.081, 12.512, 1.661};
     auto meas = pointToMeasurement(point, kitti_probe_calibration().at(29));
@@ -45,6 +46,7 @@ int main(/*int argc, char* argv[]*/)
     }
   }
 
+  if(0)
   {
     std::cout << std::endl;
     std::pair meas{0.11, 11.5};
@@ -64,6 +66,32 @@ int main(/*int argc, char* argv[]*/)
     assert(fabs(meas_again_less_iter.second - meas.second) < 1e-2);
   }
 
+  {
+    //51 -5.709   0.15 -1.772 0.0532419 0.00909542
+
+    Eigen::Vector3d point{-5.709, 0.15, -1.772};
+    std::cout << point.transpose() << std::endl;
+    std::cout << std::endl;
+    int probe_id = 51;
+    {
+      auto meas = pointToMeasurement(point, kitti_probe_calibration().at(probe_id));
+      std::cout << meas.first << " " << meas.second << std::endl;
+      auto point_again = measurementToPoint(meas.first, meas.second, kitti_probe_calibration().at(probe_id));
+      std::cout << point_again.transpose() << std::endl;
+      std::cout << (point - point_again).norm()
+                << " " << fabs(atan2(point(0), point(1)) - atan2(point_again(0), point_again(1)))
+                << std::endl;
+    }
+    {
+      auto meas = pointToMeasurement_iter(point, kitti_probe_calibration().at(probe_id));
+      std::cout << meas.first << " " << meas.second << std::endl;
+      auto point_again = measurementToPoint(meas.first, meas.second, kitti_probe_calibration().at(probe_id));
+      std::cout << point_again.transpose() << std::endl;
+      std::cout << (point - point_again).norm()
+                << " " << fabs(atan2(point(0), point(1)) - atan2(point_again(0), point_again(1)))
+                << std::endl;
+    }
+  }
   return 0;
 }
 
