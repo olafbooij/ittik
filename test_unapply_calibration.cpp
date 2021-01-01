@@ -36,9 +36,11 @@ int main(/*int argc, char* argv[]*/)
     std::cout << (point - point_again).norm() << std::endl;
 
     {
-      pointToMeasurement_iter(point, kitti_probe_calibration().at(29));
+      auto meas_iter = pointToMeasurement_iter(point, kitti_probe_calibration().at(29));
+      std::cout << meas_iter.first << " " << meas_iter.second << std::endl;
     }
   }
+
   {
     std::cout << std::endl;
     std::pair meas{0.11, 11.5};
@@ -52,6 +54,8 @@ int main(/*int argc, char* argv[]*/)
     Eigen::Vector3d point_again{accudown(point(0), 1000), accudown(point(1), 1000), accudown(point(2), 1000)};
     auto meas_again_less = pointToMeasurement(point_again, kitti_probe_calibration().at(probe_id));
     std::cout << meas_again_less.first << " " << meas_again_less.second << std::endl;
+    assert(fabs(meas_again_less.first - meas.first) < 1e-3);
+    assert(fabs(meas_again_less.second - meas.second) < 1e-1);
   }
 
   return 0;
