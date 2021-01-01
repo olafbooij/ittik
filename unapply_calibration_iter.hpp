@@ -40,7 +40,7 @@ auto pointToMeasurement_iter(const Eigen::Vector3d point, const ProbeCalibration
     if(fabs(point(0)) > fabs(point(1)))
       distance_uncor = (point(0) + cal.horizOffsetCorrection * cosRotAngle) / (cosVertAngle * sinRotAngle) - distanceCorrX;
     else
-      distance_uncor = (point(1) + cal.horizOffsetCorrection * sinRotAngle) / (cosVertAngle * cosRotAngle) - distanceCorrY;
+      distance_uncor = (point(1) - cal.horizOffsetCorrection * sinRotAngle) / (cosVertAngle * cosRotAngle) - distanceCorrY;
 
     //distance_uncor = (point(2) - cal.vertOffsetCorrection) / sinVertAngle - distanceCorrY;
 
