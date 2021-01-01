@@ -60,8 +60,8 @@ int main(/*int argc, char* argv[]*/)
     std::cout << meas_again_less.first << " " << meas_again_less.second << std::endl;
     auto meas_again_less_iter = pointToMeasurement_iter(point_again, kitti_probe_calibration().at(probe_id));
     std::cout << meas_again_less_iter.first << " " << meas_again_less_iter.second << std::endl;
-    assert(fabs(meas_again_less_iter.first - meas.first) < 1e-3);
-    assert(fabs(meas_again_less_iter.second - meas.second) < 1e-1);
+    assert(fabs(meas_again_less_iter.first - meas.first) < 1e-4);
+    assert(fabs(meas_again_less_iter.second - meas.second) < 1e-2);
   }
 
   return 0;
