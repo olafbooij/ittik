@@ -38,6 +38,10 @@ int main(/*int argc, char* argv[]*/)
     {
       auto meas_iter = pointToMeasurement_iter(point, kitti_probe_calibration().at(29));
       std::cout << meas_iter.first << " " << meas_iter.second << std::endl;
+      auto point_again = measurementToPoint(meas_iter.first, meas_iter.second, kitti_probe_calibration().at(29));
+      std::cout << point.transpose() << std::endl;
+      std::cout << point_again.transpose() << std::endl;
+      std::cout << (point - point_again).norm() << std::endl;
     }
   }
 
