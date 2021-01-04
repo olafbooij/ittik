@@ -8,5 +8,6 @@ However... something is still not correct, as can be seen in the following figur
 
 <img src="./aligned...almost.png">
 
+Still, it is clear that from this regularized data we can easily get a dense image of the velodyne data by performing some post-processing (future work...).
 
 The code is not that readable (sorry...) and uses some c++20 features; I used GCC 8.3.0 with `-std=c++2a`.
