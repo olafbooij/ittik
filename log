@@ -1,0 +1,98 @@
+2020-11-27 23:36:35 +0100
+find a clear vertical structure seen at speed.
+check if this is consistent with the horizontal angle calibration.
+
+Perhaps nice one:
+sweep 71 of 2011_09_26/2011_09_26_drive_0002_extract
+pretty fast speed car; pole on the right
+
+plot "0000000071.txt" using (atan2($2,$1)):(atan($3/sqrt($1**2+$2**2))):((sqrt($1**2+$2**2+$3**2)>5?1/0:(sqrt($1**2+$2**2+$3**2)<4.5?1/0:sqrt($1**2+$2**2+$3**2)))) with points palette
+plot "sweep" using 5:7:(($9>5?1/0:($9<4.5?1/0:$9))) with points palette
+
+make script that adds probe nr to sweep file (or do I have that already...).
+awk '{print $0*3.1415927/180}' rot_correcties > rot_correcties_rad
+
+time was 2011-09-26 13:02:51.436725546
+forward speed was 12.181075502715 m/s (2011_09_26/2011_09_26_drive_0002_extract/oxts/data/0000000749.txt
+= 43.85 km/h
+lidar rotation : 10 * 2 * pi * 1000 mrad/s
+horizontal offsets are in +/- 160 mrad interval
+thus at most 320 mrad
+the car drives .2 mm, per mrad rotation of the lidar
+thus in 320 mrad the car thus drives 64 mm
+pole is at 4.6 m distance
+thus angular error is at most 64 / 4600 = 14 mrad
+Almost what I see in the data: 5022.43 - 5005.96 = 16.47 (probe 22 - probe 46 (in my not correct upside down counting))
+The difference can be explained by the sampling
+
+Now to check if the rot_corrections can explain for the specific probe results
+hmmm, what's the order of rot_correcties ?
+hmmm, rotation corrections are specified on firing order. The vertical corrections should thus be used to determine the vertical-offset order.
+
+Let me first plot the upper and lower lidar together...
+replot "sweep" using 5:($7-32 + .3):(($9>5?1/0:($9<4.5?1/0:$9))) with points palette
+no, doesn't give the same pattern, I wonder if the upper and lower are not mirrored, should check the doc.
+doc says not mirrored, strange...
+
+implemented computing the order, seems to be consistent with the doc
+
+plot [0:7][64:0] "sweep" using 5:7:(($9>5?1/0:($9<4.5?1/0:$9))) with points palette
+plot [0:7][64:0] "sweep" using 5:7:(($9>5?1/0:($9<4.5?1/0:$8))) with labels  # hmmm, this is way too slow...
+
+Let's try to manually check some of the probes
+vertically consecutive probes are always left and right
+y-id  p-id obs-ang  cor-ang
+20    52   5.01486  0.0968532
+22    58   5.00772 -0.156948
+-> +7.14 mrad difference
+.00714 rad * 4600 mm = 32.84400 mm
+32.84400 mm / .2 mm/mrad = 164 mrad
+probe 58 is 164 mrad pointing to right with respect to probe 52
+hmmm, does not fit cor-ang:
+0.0968532 -  -0.156948 = .253801
+hmmm, horizontal sampling rate is 3 mrad... so up to 6 mrad error when comparing two, up to .006 * 4600 / .2 = .138 rad error. can explain this nonfit
+Okay, so... could be and I can use it to deduce the sign of the correction
+
+let's try align based on time... I assume I should then add the rot_correction (+)
+... hmm, the stars do not align (not with the minus either btw...)
+Sigh... I should have a look at actually reverse engineering the "calibration" script. I'm clearly missing something...
+.... or ...or the calibration is not the one actually used for kitti. ...can I reverse engineer somehow??? pffff
+
+Nice visualization of the probe positions according to the calibration file:
+plot [][5:-25] "../rot_correcties_both" using 1:2:0 with labels
+
+with + probe 20 has a 4+ at 4.29 and 4.62, probe 19 has similar pattern (at least in between those) with only 3+ shift. Hmmm other probes also seem to have the same pattern shifted by some 10+'s
+let's do some hacking to get the alignment based on those patterns
+yes pattern is clearly visible, seems to be related to vertical angle
+plot [0:7][64:0] "sweep" using 10:7:11 with labels
+let's first just remove those angles manually, and later check if it's actually something in the calibration (some crosstalking with vertical angle)
+Hmmm, or with the distance of the point course.
+
+But proven now: indeed the jumps are the same for all probes
+
+started to decipher the script to apply the calibration. No way to test it of course....
+
+finished script, seems to be working
+found ros implementation: velodyne/velodyne_pointcloud/src/lib/rawdata.cc from https://github.com/ros-drivers/velodyne.git
+seems to have made the same choices based on the manual.
+reverse engineered calibration.
+Now to try it on a kitti scan
+
+should split of the code in a separate repo named:
+ITTIK I jusT wanT my kittI bacK -> did that
+doesn't work on kitti scan. Will try to do just one point and see what's happening, might be just some x-y conversion. 
+should also check what suma is actually doing... it should use the calibration somehow... -> no it's not taking it into account it seems.
+there's also some code in https://gist.github.com/pierriko/6bbcb287aaf23358fe0a btw, with some nice asci art 
+Aha, found a buggy, was using the wrong probe ids. Now it makes more sense, but not perfect yet. seems indeed x-y conversion because lines start at about pi/2 and going down.
+Hmmm, seems the kitty xyz data is rotating anti-clockwise, while the velodyne itself is rotating clockwise. I also wonder what the orientation of the velodyne is on the car... seems a kitti-sweep start at the back of the car, but I do not know if that's also the zero-position of the velodyne. (sigh...)
+Rotating by pi/2 doesn't really help: error stays 1 to 10 mrad (though difficult to judge with high error). I wonder if the calibration is actually dependend on the rotation position...
+Probe 31 is acting very strange -> and that's probably because it is aimed close to the horizon. The algorithm is just not that stable.
+Is the "error" actually the timing difference? -> nope, I already ordered them by probe_id = time.
+
+Let's try to get a more stable method to get the position back, perhaps iterate somehow
+Btw, checked the stability. Indeed the mm-accuracy of the lidar points has a big effect on the rotation position for close to horizon points. 
+Implemented a hacky iterative method. Seems much better for all probes, but still position dependend position error.
+Okay, a +/- error: now the position error is independent. Can still be up to 8 mrad though
+the distance error between the point and the reprojected point is quite high: up to 5 cm
+fixed that, was a similar +/- bug. Now its mostly under 1cm and under 1mm. Did not change the position error though.
+so.... was a different calibration file used?? Or the mm accuracy? Seems not the second, because there's a lot of regularity in the error.

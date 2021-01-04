@@ -10,7 +10,7 @@ auto pointToMeasurement_iter(const Eigen::Vector3d point, const ProbeCalibration
   auto position = rotCorrected + cal.rotCorrection;
   auto distance = point.norm();
   auto distance_uncor = distance - cal.distCorrection;
-  // iteratively update the estimate
+  // iteratively update the position and distance_uncor estimate
   for(int i = 10; i--;)
   {
     // mostly copy=paste from forward measurementToPoint
