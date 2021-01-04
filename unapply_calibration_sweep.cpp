@@ -3,7 +3,9 @@
 
 #include<unapply_calibration_sweep.hpp>
 
-
+// Read in a sweep file from the KITTI dataset and outputs raw measurement data (ignoring reflectivity values).
+// example usage:
+// ./unapply_calibration_sweep $KITTIDIR/2011_09_26/2011_09_26_drive_0002_extract/velodyne_points/data/0000000071.txt ittiked.sweep > debug
 int main(int argc, char* argv[])
 {
   SweepUncalibrator sweepUncalibrator;
