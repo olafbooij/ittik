@@ -6,17 +6,17 @@
 
 int main(int argc, char* argv[])
 {
-  Sweep_uncalibrator sweep_uncalibrator;
+  SweepUncalibrator sweepUncalibrator;
 
-  std::ifstream sweep_file(argv[1]);
-  std::ofstream out_file(argv[2]);
+  std::ifstream sweepFile(argv[1]);
+  std::ofstream outFile(argv[2]);
   Eigen::Vector3d point;
   double refl;
 
-  while(sweep_file >> point(0) >> point(1) >> point(2) >> refl)
+  while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
   {
-    auto probe_data = sweep_uncalibrator(point);
-    out_file << std::get<0>(probe_data) << " " << std::get<1>(probe_data) << " " << std::get<2>(probe_data) << " " << std::get<3>(probe_data) << std::endl;
+    auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
+    outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << std::endl;
   }
 
   return 0;

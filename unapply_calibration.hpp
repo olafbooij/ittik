@@ -1,20 +1,23 @@
 #pragma once
 
-#include<iostream>
 #include<Eigen/Core>
 #include<calibration_common.hpp>
 
-auto pointToMeasurement(const Eigen::Vector3d point, const ProbeCalibration& cal)
+// A direct, but rather unstable algorithm to unapply the velodyne calibration,
+// i.e. compute back the distance measurement and rotational position from a 3d
+// point.
+// Does not consider some scaling final steps, nor the reflectivity value
+auto unapply_calibration(const Eigen::Vector3d point, const ProbeCalibration& cal)
 {
   auto cosVertAngle = cos(cal.vertCorrection);
   auto sinVertAngle = sin(cal.vertCorrection);
-  auto distance_y_corrected = (point(2) - cal.vertOffsetCorrection) / sinVertAngle;
-  auto xyDistance_y_corrected = distance_y_corrected * cosVertAngle;
+  auto distanceYCorrected = (point(2) - cal.vertOffsetCorrection) / sinVertAngle;
+  auto xyDistanceYCorrected = distanceYCorrected * cosVertAngle;
 
   double position;
   double rotCorrected;
   {
-    auto a = xyDistance_y_corrected;
+    auto a = xyDistanceYCorrected;
     auto b = cal.horizOffsetCorrection;
     auto c = point(1);
     auto a2 = a * a;
@@ -35,16 +38,16 @@ auto pointToMeasurement(const Eigen::Vector3d point, const ProbeCalibration& cal
   }
   auto cosRotAngle = cos(rotCorrected);
   auto sinRotAngle = sin(rotCorrected);
-  double distance_uncor;
+  double distanceUncor;
   {
-    auto a = (cal.distCorrection - cal.distCorrectionY)  / (25.04 - 1.93);
+    auto a = (cal.distCorrection - cal.distCorrectionY) / (25.04 - 1.93);
     auto b = a * cosVertAngle * cosRotAngle;
 
-    auto distance_uncor_ = (distance_y_corrected - cal.distCorrectionY  + b * cal.distCorrection + a * (cal.horizOffsetCorrection * sinRotAngle + 1.93)) / (1 - b);
+    auto distanceUncor_ = (distanceYCorrected - cal.distCorrectionY  + b * cal.distCorrection + a * (cal.horizOffsetCorrection * sinRotAngle + 1.93)) / (1 - b);
 
-    auto distance_uncor__ = (distance_y_corrected - cal.distCorrectionY - b * cal.distCorrection - a * (cal.horizOffsetCorrection * sinRotAngle - 1.93)) / (1 + b);
-    distance_uncor = std::min(distance_uncor_, distance_uncor__);
+    auto distanceUncor__ = (distanceYCorrected - cal.distCorrectionY - b * cal.distCorrection - a * (cal.horizOffsetCorrection * sinRotAngle - 1.93)) / (1 + b);
+    distanceUncor = std::min(distanceUncor_, distanceUncor__);
   }
-  return std::pair{position, distance_uncor};
+  return std::pair{position, distanceUncor};
 }
 

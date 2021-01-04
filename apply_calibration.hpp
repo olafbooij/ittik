@@ -3,11 +3,15 @@
 #include<Eigen/Core>
 #include<calibration_common.hpp>
 
-Eigen::Vector3d measurementToPoint(const double position, const double distance_uncor, const ProbeCalibration& cal)
+// Algorithm taken from the Coordinate Calculation Algorithm Sample Code from
+// Appendix F of the Velodyne HDL-64E S2 and S2.1 User's manual and programming
+// guide, revision 63HDL64E S2 Rev F DEC11
+
+Eigen::Vector3d apply_calibration(const double position, const double distanceUncor, const ProbeCalibration& cal)
 {
-  if(distance_uncor == 0) // error value
+  if(distanceUncor == 0) // error value
     return {.0, .0, .0};
-  auto distance = distance_uncor + cal.distCorrection;
+  auto distance = distanceUncor + cal.distCorrection;
   auto rotCorrected = position - cal.rotCorrection;
   double cosRotAngle = cos(rotCorrected);
   double sinRotAngle = sin(rotCorrected);
@@ -24,11 +28,11 @@ Eigen::Vector3d measurementToPoint(const double position, const double distance_
   double distanceCorrY = (cal.distCorrection - cal.distCorrectionY) * (yy - 1.93) / (25.04 - 1.93) + cal.distCorrectionY;
 
   Eigen::Vector3d point;
-  auto distance_x_corrected = distance_uncor + distanceCorrX;
+  auto distance_x_corrected = distanceUncor + distanceCorrX;
   auto xyDistance_x_corrected = distance_x_corrected * cosVertAngle;
   point(0) = xyDistance_x_corrected * sinRotAngle - cal.horizOffsetCorrection * cosRotAngle;
 
-  auto distance_y_corrected = distance_uncor + distanceCorrY;
+  auto distance_y_corrected = distanceUncor + distanceCorrY;
   auto xyDistance_y_corrected = distance_y_corrected * cosVertAngle;
   point(1) = xyDistance_y_corrected * cosRotAngle + cal.horizOffsetCorrection * sinRotAngle;
 

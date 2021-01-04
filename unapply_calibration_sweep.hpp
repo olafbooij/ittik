@@ -2,13 +2,13 @@
 
 #include<tuple>
 #include<Eigen/Core>
+#include<iostream>
 
 #include<calibration_kitti.hpp>
-#include<unapply_calibration.hpp>
 #include<unapply_calibration_iter.hpp>
 #include<apply_calibration.hpp>
 
-// get the probe order based vertical angle
+// Get the probe order based vertical angle.
 auto determine_probe_order(const Calibration calibration)
 {
   std::array<std::size_t, calibration.size()> perm;
@@ -17,39 +17,43 @@ auto determine_probe_order(const Calibration calibration)
   return perm;
 }
 
-struct Sweep_uncalibrator
+// This helper class should be fed with points in the order as stored in the
+// KITTI dataset. The probe number for each point can then be simply determined
+// as described in:
+// "Scan-based semantic segmentation of lidar point clouds: An experimental study",
+// Triess, L.T., Peter, D., Rist, C.B., Zöllner, J.M., arXiv preprint arXiv:2004.11803 
+struct SweepUncalibrator
 {
-  int vert_id_;
-  double horizontal_angle_prev_;
-  std::array<std::size_t, 64> probe_order_;
-  Sweep_uncalibrator() :
-    vert_id_(0),
-    horizontal_angle_prev_(0),
-    probe_order_(determine_probe_order(kitti_probe_calibration()))
+  int vertId_;
+  double horizontalAnglePrev_;
+  std::array<std::size_t, 64> probeOrder_;
+  SweepUncalibrator() :
+    vertId_(0),
+    horizontalAnglePrev_(0),
+    probeOrder_(determine_probe_order(kitti_probe_calibration()))
   {}
 
   auto operator()(const Eigen::Vector3d& point)
   {
     {
-      double horizontal_angle = atan2(point(1), point(0));
-      if(horizontal_angle < 0)
-        horizontal_angle += 2 * M_PI;
-      if(horizontal_angle < horizontal_angle_prev_)
-        ++vert_id_;
-      horizontal_angle_prev_ = horizontal_angle;
+      double horizontalAngle = atan2(point(1), point(0));
+      if(horizontalAngle < 0)
+        horizontalAngle += 2 * M_PI;
+      if(horizontalAngle < horizontalAnglePrev_)
+        ++vertId_;
+      horizontalAnglePrev_ = horizontalAngle;
     }
-    auto probe_id = probe_order_.at(vert_id_);
-    Eigen::Vector3d point_velodyne{point(0), point(1), point(2)};
-    auto probe_data = pointToMeasurement_iter(point_velodyne, kitti_probe_calibration().at(probe_id));
-    auto point_again = measurementToPoint(probe_data.first, probe_data.second, kitti_probe_calibration().at(probe_id));
+    auto probeId = probeOrder_.at(vertId_);
+    auto [position, distanceUncor] = unapply_calibration_iter(point, kitti_probe_calibration().at(probeId));
 
+    // some debug code
+    auto pointAgain = apply_calibration(position, distanceUncor, kitti_probe_calibration().at(probeId));
     std::cout.precision(7);
     auto normrad = [](auto v){return v<M_PI?v:2*M_PI-v;};
-    std::cout << probe_id << " " << point_velodyne.transpose() << " " << probe_data.first << " " << probe_data.second << " " << (point_velodyne - point_again).norm()
-              << " " << normrad(fabs(atan2(point_velodyne(0), point_velodyne(1)) - atan2(point_again(0), point_again(1))))
+    std::cout << probeId << " " << point.transpose() << " " << position << " " << distanceUncor << " " << (point - pointAgain).norm()
+              << " " << normrad(fabs(atan2(point(0), point(1)) - atan2(pointAgain(0), pointAgain(1))))
               << std::endl;
 
-    return std::make_tuple(probe_id, probe_data.first, probe_data.second, vert_id_);
+    return std::make_tuple(probeId, position, distanceUncor, vertId_);
   }
-
 };
