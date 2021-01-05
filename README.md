@@ -1,4 +1,4 @@
-# ittik
+# ITTIK (I jusT wanT my kittI bacK)
 
 An attempt to get back the original dense Velodyne sensor readings from the sparse point clouds of the KITTI dataset, by reverting the Velodyne calibration. 
 
