@@ -1,0 +1,130 @@
+\documentclass[english]{article}
+\usepackage[latin1]{inputenc}
+\makeatletter
+\usepackage{babel}
+\usepackage{natbib}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{subfigure}
+\usepackage{multirow}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\graphicspath{{./images/}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\frametrans}[3]{{}_{#1}{#3}^{#2}}
+\makeatother
+\addtolength{\textwidth}{4cm}
+\addtolength{\hoffset}{-2cm}
+\begin{document}
+
+\title{ITTIK}
+\author{Olaf Booij}
+
+\maketitle
+
+The KITTI dataset is a standard for evaluating R\&D in autonomous
+driving and mapping. An important part of the used sensor setup is a
+surround LiDAR sensor which captures ranges and reflectivity of the 
+structures and objects around the car.
+This LiDAR data is not presented as raw sensor readings, which are hard
+to interpret. Rather, the data is preprocessed into easy to comprehend
+3D point clouds, ready to be visualized and processed using general
+point cloud methods.
+
+A drawback of the point clouds is that it is difficult to get the
+precise time for each of the 3d point measurements. In addition, it is
+difficult to compute the exact origin of the cast LiDAR rays. A more
+general concern is that the point clouds do not reflect the dense and
+structured form of the LiDAR measurement.
+
+ITTIK tries to get back the raw LiDAR sensor data by undoing the steps
+performed during the KITTI preprocessing. It does so using the KITTI
+point clouds, as well as the available calibration data.
+
+\section{Velodyne data}
+
+\section{Preprocessing}
+\section{Reversing the preprocessing}
+
+
+\bibliographystyle{apalike}
+\bibliography{test}
+
+\end{document}
+
+\section{Thingies to copy-paste}
+\subsection{subbla}
+\subsubsection{subsubbla}
+\paragraph{}
+\par{parbla}
+\par
+
+
+\begin{figure}
+  \begin{center}
+    \subfigure[][SubCaption1]
+      {
+       \label{subfig:name1} 
+       \includegraphics[width=\textwidth]{nogNiks}
+      }  
+    \subfigure[][SubCaption2]
+      {
+       \label{subfig:name2} 
+       \includegraphics[height=8cm]{nogNiks}
+      }  
+      \caption{Caption}
+  \label{fig:name}
+  \end{center}
+\end{figure}
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=\textwidth]{nogNiks}
+    %\scalebox{.5}{ \input{images/name.pstex_t} }
+    \caption{Caption}
+    \label{fig:name}
+  \end{center}
+\end{figure}
+\begin{itemize}
+\item 
+\item
+\end{itemize}
+\begin{description}
+\item
+\end{description}
+\begin{enumerate}
+\item
+\end{enumerate}
+\begin{equation}
+  0 \neq 1
+\end{equation}
+\begin{eqnarray}
+  0 &\neq& 1 \\
+  A 
+         \left[
+           \begin{array}{ccc}
+             1 & 0 & 0 \\
+             0 & 1 & 0 \\
+             0 & 0 & 1
+           \end{array}
+         \right]
+  A^T
+  &=& B
+\end{eqnarray}
+\begin{table}
+  %\renewcommand{\arraystretch}{1.2}
+  \caption{}
+  \label{tab:mane}
+  \begin{center}
+    \begin{tabular}{|c|c||c|}
+      \hline
+      \multicolumn{2}{|c||}{A} & B \\ \hline
+       1 & 1 & 1 \\ \hline
+       1 & 1 & 1 \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
