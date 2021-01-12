@@ -49,15 +49,16 @@ point clouds, as well as the available calibration data.
 % sensor
 The LiDAR sensor used for the KITTI dataset is a Velodyne HDL-64E. This
 device fires its 64 individual lasers with a frequency of 20 KHz, while
-the device is rotating at a rate of 10 Hz, resulting in approx. 1.3
-million measurements per second. The lasers are distributed over 4
-locations with a slightly different offset. In addition, the rays of
-each laser have a different vertical and horizontal direction. The exact
-value of these offsets and directions are given in the calibration
-stored on the device (more on this in the next section). In
-Figure~\ref{fig:directions} the different directions of the laser rays
-are shown. As can be seen the vertical view-angle is approximately 28
-degrees and the horizontal view-angle 19 degrees.
+the device is rotating at a rate of 10 Hz, resulting in approximately
+130,000 measurements per rotation and 1.3 million measurements per
+second. The rays of each laser have a different vertical and horizontal
+direction. In addition, the lasers are distributed over 4 locations on
+the device resulting in a slightly different offset of the ray origin.
+The exact value of these directions and offsets are given in the
+calibration stored on the device (more on this in the next section).
+In Figure~\ref{fig:directions} the different directions of the laser
+rays are shown. As can be seen the vertical view-angle is approximately
+28 degrees and the horizontal view-angle 19 degrees.
 
 \begin{figure}
     \centering
@@ -69,8 +70,15 @@ degrees and the horizontal view-angle 19 degrees.
     file in degrees.}
 		\label{fig:directions}
 \end{figure}
-% moving sensor
-% quantify error
+
+The lasers do not fire at the same time. Instead, at each timestep,
+two of the 64 lasers fire in a fixed sequence. Because the device keeps
+on rotating, each pair of points has a different measurement time as
+well as a different device angle.
+
+%Moving car
+
+% quantify "error" given assumptions
 
 \section{Preprocessing}
 \label{sec:preproc}
