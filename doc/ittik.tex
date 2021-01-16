@@ -32,8 +32,9 @@ surround LiDAR sensor which captures ranges and reflectivity of the
 structures and objects around the car.
 This LiDAR data is not presented as raw sensor readings, which are hard
 to interpret. Rather, the data is preprocessed into easy to comprehend
-3D point clouds, ready to be visualized and processed using general
-point cloud methods.
+single scan 3D point clouds measured in a single 360 degrees rotation.
+Generic point cloud software can be used to visualize and process such
+data.
 
 A drawback of the point clouds is that it is difficult to get the
 precise time for each of the 3d point measurements. In addition, it is
@@ -50,8 +51,13 @@ point clouds, as well as the available calibration data.
 The LiDAR sensor used for the KITTI dataset is a Velodyne HDL-64E. This
 device fires its 64 individual lasers with a frequency of 20 KHz, while
 the device is rotating at a rate of 10 Hz, resulting in approximately
-130,000 measurements per rotation and 1.3 million measurements per
-second. The rays of each laser have a different vertical and horizontal
+130,000 measurements per scan and 1.3 million measurements per
+second. The 64 lasers do not fire at the same time. Instead, at each
+timestep, two of the lasers fire in a fixed sequence. Because the device
+keeps on rotating, each pair of points has a unique measurement time as
+well as a unique device orientation.
+
+The rays of each laser have a different vertical and horizontal
 direction. In addition, the lasers are distributed over 4 locations on
 the device resulting in a slightly different offset of the ray origin.
 The exact value of these directions and offsets are given in the
@@ -71,10 +77,17 @@ rays are shown. As can be seen the vertical view-angle is approximately
 		\label{fig:directions}
 \end{figure}
 
-The lasers do not fire at the same time. Instead, at each timestep,
-two of the 64 lasers fire in a fixed sequence. Because the device keeps
-on rotating, each pair of points has a different measurement time as
-well as a different device angle.
+It is important to understand the implications of this horizontal view
+angle. Measured points from the same scan that are close to each other
+in the scene, have been measured at a slightly different time. Take for
+example laser \#41 and laser \#46 (see Figure~\ref{fig:directions}).
+Verticaly, they are ``neighbors'', but horizontally they are 19 degrees
+apart. This means that the device has to rotate 19 degrees, before laser
+\#46 points in the direction where laser \#41 was pointing. Taking the
+rotation speed into account, two very close points in the scene will
+have been meaured with a time difference of $\frac{19}{360} 100 \,
+\mbox{ms}= 5 \, \mbox{ms}$.
+
 
 %Moving car
 
@@ -86,7 +99,7 @@ well as a different device angle.
 % calibration file
 
 \section{Reversing the preprocessing}
-% probe number
+% laser number
 % iterative algorithm
 
 \section{Results}
