@@ -29,7 +29,7 @@
 The KITTI dataset is a standard for evaluating R\&D in autonomous
 driving and mapping. An important part of the used sensor setup is a
 surround LiDAR sensor which captures ranges and reflectivity of the
-structures and objects around the car.
+structures and objects around the vehicle.
 This LiDAR data is not presented as raw sensor readings, which are hard
 to interpret. Rather, the data is preprocessed into easy to comprehend
 single scan 3D point clouds measured in a single 360 degrees rotation.
@@ -68,30 +68,46 @@ rays are shown. As can be seen the vertical view-angle is approximately
 
 \begin{figure}
     \centering
-    \def\svgwidth{.8 \columnwidth}
-    \input{directions.pdf_tex}
-    %\def\svgwidth{\columnwidth}
-    %\scalebox{0.8}{\input{directions.pdf_tex}}
-    \caption{Direction of each laser as indicated in the calibration
-    file in degrees.}
+    %\input{directions.pdf_tex}
+    \def\svgwidth{\columnwidth}
+    \scalebox{0.9}{
+    \def\svgwidth{.6 \columnwidth}
+      \input{directions.pdf_tex}
+    }
+    \caption{Direction of each laser, plotted with there index, as
+    indicated in the calibration file in degrees.}
 		\label{fig:directions}
 \end{figure}
 
 It is important to understand the implications of this horizontal view
-angle. Measured points from the same scan that are close to each other
-in the scene, have been measured at a slightly different time. Take for
-example laser \#41 and laser \#46 (see Figure~\ref{fig:directions}).
-Verticaly, they are ``neighbors'', but horizontally they are 19 degrees
-apart. This means that the device has to rotate 19 degrees, before laser
-\#46 points in the direction where laser \#41 was pointing. Taking the
-rotation speed into account, two very close points in the scene will
-have been meaured with a time difference of $\frac{19}{360} 100 \,
-\mbox{ms}= 5 \, \mbox{ms}$.
+angle. Points from the same scan that are close to each other in the
+scene, have a different measurement time. Take for example laser \#41
+and laser \#46 (see Figure~\ref{fig:directions}). Verticaly, they are
+``neighbors'', but horizontally they are 19 degrees apart.
 
+Thus, it is not easy to get information from the measurements of a
+single fire of all lasers. It is like a depth camera where only 64
+pixels are working spread over the image plane. A point cloud
+representations is much more useful.
 
-%Moving car
+Still, for this point cloud we should consider that the device for the
+example lasers has to rotate 19 degrees, before they measure the same
+structure. Taking the rotation speed into account, two very close points
+in the scene will have been measured with a time difference of
+$\frac{19}{360} 100 \, \mbox{ms}= 5 \, \mbox{ms}$.
 
-% quantify "error" given assumptions
+This time difference has to be taken into acount of course when
+processing the data. KITTI contains, in addition to the ``raw'' point
+clouds, motion corrected data, in which the vehicle motion is
+compensatad for, for each laser. For moving objects, however, this is of
+course more difficult.
+% ... example of moving object in motion corrected data
+
+In addition, the spread of the lasers, and their non-monotinic firing
+behavior (more about that later), results in a non-uniform point cloud,
+hard to feed into standard image processing tools such as convolutional
+neural networks.
+% ... example of piece of point cloud
 
 \section{Preprocessing}
 \label{sec:preproc}
