@@ -57,6 +57,12 @@ timestep, two of the lasers fire in a fixed sequence. Because the device
 keeps on rotating, each pair of points has a unique measurement time as
 well as a unique device orientation.
 
+For each firing laser, the distance and reflectivity of the scene point
+is measured. In addition, for each lower and upper block of 32 laser
+fires the rotational position is measured. For each packet of 6 lower
+and upper blocks, a timestamp is sent, which can be used to
+synchronize the data with measurements from other sensors.
+
 The rays of each laser have a different vertical and horizontal
 direction. In addition, the lasers are distributed over 4 locations on
 the device resulting in a slightly different offset of the ray origin.
@@ -103,15 +109,18 @@ compensatad for, for each laser. For moving objects, however, this is of
 course more difficult.
 % ... example of moving object in motion corrected data
 
-In addition, the spread of the lasers, and their non-monotinic firing
-behavior (more about that later), results in a non-uniform point cloud,
-hard to feed into standard image processing tools such as convolutional
-neural networks.
+Nevertheless, this project is mainly meant to counter another
+disadvantage of the point cloud representation. The spread of the
+lasers, and their non-monotinic firing behavior (more about that later),
+results in a non-uniform point cloud, hard to feed into standard image
+processing tools such as convolutional neural networks. This is the main
+reason to try to get the original Velodyne data back.
 % ... example of piece of point cloud
 
 \section{Preprocessing}
 \label{sec:preproc}
-% algorithm
+
+
 % calibration file
 
 \section{Reversing the preprocessing}
