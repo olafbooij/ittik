@@ -119,9 +119,27 @@ reason to try to get the original Velodyne data back.
 
 \section{Preprocessing}
 \label{sec:preproc}
+In order to easily interpret the Velodyne data, the raw byte stream is
+preprocessed using a fixed process, as given in the User's Manual and
+Programming Guide. This process has two parts. The first part, computes for
+each laser fire from the lased Id, the measured distance and measured
+rotational position, the 3d point location. The second part, computes
+for the raw intensity measurement, the surface reflectivity of the
+measured point. We will (for now) only focus on the first part.
 
+The preprocessing uses some parameters. Some of these are fixed for all
+devices of the used LiDAR type, such as the location of the laser on the
+device. There are, however, also device specific parameters, which are
+determined in the factory using a specific calibration procedure and
+stored on the device. These values are also transmitted by the device to
+be stored and used by the preprocessing procedure.
 
 % calibration file
+
+% Note, that the number of bytes used by the device to transmit its
+% measurements is kept low, while preserving the information.
+% The storage of the (uncompressed) millimeter accurate point clouds is
+% about XX times larger than the format used by the sensor.
 
 \section{Reversing the preprocessing}
 % laser number
