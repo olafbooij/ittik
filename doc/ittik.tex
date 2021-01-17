@@ -129,10 +129,17 @@ measured point. We will (for now) only focus on the first part.
 
 The preprocessing uses some parameters. Some of these are fixed for all
 devices of the used LiDAR type, such as the location of the laser on the
-device. There are, however, also device specific parameters, which are
-determined in the factory using a specific calibration procedure and
-stored on the device. These values are also transmitted by the device to
-be stored and used by the preprocessing procedure.
+device. There are, however, also device specific parameters, such as the
+precise direction of the lasers, which are determined in the factory
+using a specific calibration procedure and stored on the device. These
+values are also transmitted by the device to be stored and used by the
+preprocessing procedure.
+
+For the KITTI dataset these calibration values are provided on the
+website in the standard xml form:
+\path{velodynecalib_S2_factory_flatness_intensity.xml}.
+The values in this file are used in ITTIK, and for visualization such
+as in Figure~\ref{fig:directions}.
 
 % calibration file
 
