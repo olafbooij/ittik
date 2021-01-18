@@ -147,45 +147,45 @@ algorithm.
 \begin{eqnarray}
   p'(d, \theta, l, \Delta d) &=& \left(
            \begin{array}{l}
-             (d + \Delta d) * \cos{\phi_l} * \sin{\theta} - h_l \cos{\theta} \nonumber \\
-             (d + \Delta d) * \cos{\phi_l} * \cos{\theta} + h_l \sin{\theta} \nonumber \\
+             (d + \Delta d) * \cos{\phi_l} * \sin(\theta - \Delta \theta_l) - h_l \cos(\theta - \Delta \theta_l) \\
+             (d + \Delta d) * \cos{\phi_l} * \cos(\theta - \Delta \theta_l) + h_l \sin(\theta - \Delta \theta_l) \\
              (d + \Delta d) * \sin{\phi_l} + v_l
            \end{array}
          \right)
 \end{eqnarray}
 
 \begin{eqnarray}
-  \Delta dx &=& \Delta dx_l + \frac{(p_x'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dx_l) - 2.40)}{(25.04 - 2.40)} \nonumber \\
-  \Delta dy &=& \Delta dy_l + \frac{(p_y'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dy_l) - 1.93)}{(25.04 - 1.93)} \nonumber
+  \Delta dx &=& \Delta dx_l + \frac{p_x'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dx_l) - 2.40}{25.04 - 2.40} \\
+  \Delta dy &=& \Delta dy_l + \frac{p_y'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dy_l) - 1.93}{25.04 - 1.93} 
 \end{eqnarray}
 
 \begin{eqnarray}
   p(d, \theta, l) &=& \left(
            \begin{array}{l}
-              p_x'(d, \theta, l, \Delta dx) \nonumber \\
-              p_y'(d, \theta, l, \Delta dy) \nonumber \\
-              p_z'(d, \theta, l, \Delta dy) \nonumber
+              p_x'(d, \theta, l, \Delta dx) \\
+              p_y'(d, \theta, l, \Delta dy) \\
+              p_z'(d, \theta, l, \Delta dy)
            \end{array}
          \right)
 \end{eqnarray}
 
 \begin{eqnarray}
-  d &=& d_u + \Delta d_{\mbox{c}} \nonumber \\
-  \theta &=& \theta_u - \theta_{\mbox{c}} \nonumber \\
-  d' &=& d * \cos{\phi_{\mbox{c}}} \nonumber \\
-  x &=& |d' * \sin{\theta} - h_{\mbox{c}} * \cos{\theta}| \nonumber \\
-  y &=& |d' * \cos{\theta} + h_{\mbox{c}} * \sin{\theta}| \nonumber \\
-  \Delta dx &=& (\Delta d_{\mbox{c}} - \Delta dx_{\mbox{c}}) * (x - 2.40) / (25.04 - 2.40) + \Delta dx_{\mbox{c}} \nonumber \\
-  \Delta dy &=& (\Delta d_{\mbox{c}} - \Delta dy_{\mbox{c}}) * (y - 1.93) / (25.04 - 1.93) + \Delta dy_{\mbox{c}} \nonumber \\
+  d_c &=& d + \Delta d_l \nonumber \\
+  \theta &=& \theta_u - \theta_l \nonumber \\
+  d' &=& d_c * \cos{\phi_l} \nonumber \\
+  x &=& |d' * \sin{\theta} - h_l * \cos{\theta}| \nonumber \\
+  y &=& |d' * \cos{\theta} + h_l * \sin{\theta}| \nonumber \\
+  \Delta dx &=& (\Delta d_l - \Delta dx_l) * (x - 2.40) / (25.04 - 2.40) + \Delta dx_l \nonumber \\
+  \Delta dy &=& (\Delta d_l - \Delta dy_l) * (y - 1.93) / (25.04 - 1.93) + \Delta dy_l \nonumber \\
   d_x &=& d_u + \Delta dx \nonumber \\
-  d'_x &=& d_x * \cos{\phi_{\mbox{c}}} \nonumber \\
+  d'_x &=& d_x * \cos{\phi_l} \nonumber \\
   d_y &=& d_u + \Delta dy \nonumber \\
-  d'_y &=& d_y * \cos{\phi_{\mbox{c}}} \nonumber \\
+  d'_y &=& d_y * \cos{\phi_l} \nonumber \\
   p &=&  \left(
            \begin{array}{c}
-             d'_x * \sin{\theta} - h_{\mbox{c}} \cos{\theta} \nonumber \\
-             d'_y * \cos{\theta} + h_{\mbox{c}} \sin{\theta} \nonumber \\
-             d_y * \sin{\phi_{\mbox{c}}} + v_{\mbox{c}}
+             d'_x * \sin{\theta} - h_l \cos{\theta} \nonumber \\
+             d'_y * \cos{\theta} + h_l \sin{\theta} \nonumber \\
+             d_y * \sin{\phi_l} + v_l
            \end{array}
          \right)
 \end{eqnarray}
