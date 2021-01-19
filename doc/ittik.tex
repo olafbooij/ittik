@@ -142,8 +142,12 @@ this file are used in ITTIK, and for visualizations in this document
 such as in Figure~\ref{fig:directions}.
 
 In the following, we describe the main part of the preprocessing
-algorithm.
+algorithm, taken from the User's Manual and Programming Guide. Some
+travial parts on rescaling the raw byte stream data is left out.
 
+The function to compute the 3d point, given a distance measurement $d$,
+the rotational position $\theta$ and the devica laser id $l$ is close to
+the formula ($\Delta d$ is explained below):
 \begin{eqnarray}
   p'(d, \theta, l, \Delta d) &=& \left(
            \begin{array}{l}
@@ -151,14 +155,30 @@ algorithm.
              (d + \Delta d) * \cos{\phi_l} * \cos(\theta - \Delta \theta_l) + h_l \sin(\theta - \Delta \theta_l) \\
              (d + \Delta d) * \sin{\phi_l} + v_l
            \end{array}
-         \right)
+         \right),
 \end{eqnarray}
+in which the variables with subscript $l$ are the calibration parameters
+specific to laser $l$ relative to the device. The values $\theta_l$ and
+$\phi_l$ are the horizontal and vertical direction, named vertCorrection
+and rotCorrection. The values $h_l$ and $b_l$ are the horizontal and
+vertical position, named horizOffsetCorrection and vertOffsetCorrection.
 
+It is close, but not complete. There's actually a non-symetric adjustment
+for the $x$ and $y$ component. They are based on parameters $\Delta
+d_l$, $\Delta dx_l$ and $\Delta dy_l$, named distCorrection,
+distCorrectionX and distCorrectionY, which are obtained using a factory
+calibration procedure with objects placed at specific positions from the
+sensor.  These parameters are used as follows to get $x$ and $y$
+specific distance adjustments:
 \begin{eqnarray}
   \Delta dx &=& \Delta dx_l + \frac{p_x'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dx_l) - 2.40}{25.04 - 2.40} \\
-  \Delta dy &=& \Delta dy_l + \frac{p_y'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dy_l) - 1.93}{25.04 - 1.93} 
+  \Delta dy &=& \Delta dy_l + \frac{p_y'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dy_l) - 1.93}{25.04 - 1.93},
 \end{eqnarray}
+with $p'(\cdot) = \left(p_x'(\cdot) , p_y'(\cdot) , p_z'(\cdot) \right)^T$.
 
+These adjustment are then used for computing the actual point, with the
+interesting note that the $z$ value is computed using the $y$-specific
+distance adjustment:
 \begin{eqnarray}
   p(d, \theta, l) &=& \left(
            \begin{array}{l}
@@ -166,8 +186,31 @@ algorithm.
               p_y'(d, \theta, l, \Delta dy) \\
               p_z'(d, \theta, l, \Delta dy)
            \end{array}
-         \right)
+         \right).
 \end{eqnarray}
+
+Apart from some rescaling that is left out, we also emmitted some offset
+from the process called ``pos'' in the User's Manual, which is not
+explained further. This needs further investigation.
+
+
+% Note, that the number of bytes used by the device to transmit its
+% measurements is kept low The storage of the (uncompressed) millimeter
+% accurate point clouds is about 2 times larger than the format used by
+% the sensor. 17+17+11+7 bit vs 16+8
+
+\section{Reversing the preprocessing}
+% laser number
+% iterative algorithm
+
+\section{Results}
+% error when reprojecting distance/position
+% position alignment
+
+\bibliographystyle{apalike}
+\bibliography{test}
+
+\section*{Appendix}
 
 \begin{eqnarray}
   d_c &=& d + \Delta d_l \nonumber \\
@@ -189,27 +232,6 @@ algorithm.
            \end{array}
          \right)
 \end{eqnarray}
-
-
-
-
-% Note, that the number of bytes used by the device to transmit its
-% measurements is kept low, while preserving the information.
-% The storage of the (uncompressed) millimeter accurate point clouds is
-% about 2 times larger than the format used by the sensor.
-% 17+17+11+7 bit
-% 16+8
-
-\section{Reversing the preprocessing}
-% laser number
-% iterative algorithm
-
-\section{Results}
-% error when reprojecting distance/position
-% position alignment
-
-\bibliographystyle{apalike}
-\bibliography{test}
 
 \end{document}
 
