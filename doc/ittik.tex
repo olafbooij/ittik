@@ -158,6 +158,7 @@ the formula:
              (d + \Delta d) * \sin{\phi_l} + v_l
            \end{array}
          \right),
+  \label{eq:ptilde}
 \end{eqnarray}
 in which the variables with subscript $l$ are the calibration parameters
 specific to laser $l$ relative to the device. The values $\theta_l$ and
@@ -228,13 +229,14 @@ These values are then iteratively optimized. The rotational position is optimize
            \right) + \Delta \theta_l,
    \label{eq:thetait}
 \end{equation}
-where $\Delta dx$ and $\Delta dy$ are calculated using Equations~(\ref{eq:ddx}) and~(\ref{eq:ddy}).
+where $\Delta dx$ and $\Delta dy$ are calculated using
+Equations~(\ref{eq:ptilde}) to~(\ref{eq:ddy}) again.
 
 The distance measurement is optimized as:
 \begin{equation}
     d \leftarrow \frac{p_x + h_l * \cos(\theta - \Delta \theta_l)}{\cos{\phi_l} * \sin(\theta - \Delta \theta_l)} - \Delta dx.  \label{eq:dita}
 \end{equation}
-Or, to increase numerical accuracy, if $p_y < p_x$:
+Or, to increase numerical accuracy, if $p_y > p_x$:
 \begin{equation}
     d \leftarrow \frac{p_y - h_l * \sin(\theta - \Delta \theta_l)}{\cos{\phi_l} * \cos(\theta - \Delta \theta_l)} - \Delta dy.  \label{eq:ditb}
 \end{equation}
