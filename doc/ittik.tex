@@ -15,6 +15,7 @@
 \usepackage{amsmath}
 \graphicspath{{./images/}}
 \DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\atantwo}{atan2}
 \newcommand{\frametrans}[3]{{}_{#1}{#3}^{#2}}
 \makeatother
 \addtolength{\textwidth}{4cm}
@@ -145,11 +146,12 @@ In the following, we describe the main part of the preprocessing
 algorithm, taken from the User's Manual and Programming Guide. Some
 travial parts on rescaling the raw byte stream data is left out.
 
-The function to compute the 3d point, given a distance measurement $d$,
-the rotational position $\theta$ and the devica laser id $l$ is close to
-the formula ($\Delta d$ is explained below):
+The function to compute the 3d point $\mathbf{p}$, given a distance measurement $d$,
+the rotational position $\theta$ and the laser id $l$ is close to
+the formula:
 \begin{eqnarray}
-  p'(d, \theta, l, \Delta d) &=& \left(
+  \mathbf{p'} =
+  f'(d, \theta, l, \Delta d) &=& \left(
            \begin{array}{l}
              (d + \Delta d) * \cos{\phi_l} * \sin(\theta - \Delta \theta_l) - h_l \cos(\theta - \Delta \theta_l) \\
              (d + \Delta d) * \cos{\phi_l} * \cos(\theta - \Delta \theta_l) + h_l \sin(\theta - \Delta \theta_l) \\
@@ -171,28 +173,29 @@ calibration procedure with objects placed at specific positions from the
 sensor.  These parameters are used as follows to get $x$ and $y$
 specific distance adjustments:
 \begin{eqnarray}
-  \Delta dx &=& \Delta dx_l + \frac{p_x'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dx_l) - 2.40}{25.04 - 2.40} \\
-  \Delta dy &=& \Delta dy_l + \frac{p_y'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dy_l) - 1.93}{25.04 - 1.93},
+  \Delta dx &=& \Delta dx_l + \frac{f_x'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dx_l) - 2.40}{25.04 - 2.40}  \label{eq:ddx} \\
+  \Delta dy &=& \Delta dy_l + \frac{f_y'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dy_l) - 1.93}{25.04 - 1.93}, \label{eq:ddy}
 \end{eqnarray}
-with $p'(\cdot) = \left(p_x'(\cdot) , p_y'(\cdot) , p_z'(\cdot) \right)^T$.
+with $f'(\cdot) = \left(f_x'(\cdot) , f_y'(\cdot) , f_z'(\cdot) \right)^T$.
 
 These adjustment are then used for computing the actual point, with the
 interesting note that the $z$ value is computed using the $y$-specific
 distance adjustment:
 \begin{eqnarray}
-  p(d, \theta, l) &=& \left(
+  \mathbf{p} =
+  f(d, \theta, l) &=& \left(
            \begin{array}{l}
-              p_x'(d, \theta, l, \Delta dx) \\
-              p_y'(d, \theta, l, \Delta dy) \\
-              p_z'(d, \theta, l, \Delta dy)
+              f_x'(d, \theta, l, \Delta dx) \\
+              f_y'(d, \theta, l, \Delta dy) \\
+              f_z'(d, \theta, l, \Delta dy)
            \end{array}
          \right).
+  \label{eq:p}
 \end{eqnarray}
 
 Apart from some rescaling that is left out, we also emmitted some offset
 from the process called ``pos'' in the User's Manual, which is not
 explained further. This needs further investigation.
-
 
 % Note, that the number of bytes used by the device to transmit its
 % measurements is kept low The storage of the (uncompressed) millimeter
@@ -200,9 +203,59 @@ explained further. This needs further investigation.
 % the sensor. 17+17+11+7 bit vs 16+8
 
 \section{Reversing the preprocessing}
-% laser number
-% iterative algorithm
+The aim is to reverse Equation~(\ref{eq:p}), getting back the distance
+measurement $d$, the rotational position of the device $\theta$ and the
+laser id $l$ given a point $p$.
 
+The laser id can perhaps be computed by determining the vertical
+direction of the point and matching it with the fixed $\phi_l$'s of each
+laser. However, it is easier to use the order of the points in the KITTI
+point clouds, which group the point per laser starting with the most
+upward pointing laser. The way to do this is described nicely in CITE.
+
+Getting the other parameters is not that straightforward. We solve it in
+an iterative fashion. First, an approximate value of both the distance and
+the rotation is computed as initial values:
+\begin{eqnarray}
+  \theta &=& \atantwo(\mathbf{p}_x, \mathbf{p}_y) + \theta_l, \\
+  d &=& ||p|| - \Delta d.
+\end{eqnarray}
+These values are then iteratively optimized. The rotational position is optimized using:
+\begin{equation}
+   \theta \leftarrow \atantwo\left(
+                     \frac{\mathbf{p}_x + h_l * \cos(\theta - \Delta \theta_l)}{(d + \Delta dx) * \cos{\phi_l}},
+                     \frac{\mathbf{p}_y - h_l * \sin(\theta - \Delta \theta_l)}{(d + \Delta dy) * \cos{\phi_l}}
+           \right) + \Delta \theta_l,
+   \label{eq:thetait}
+\end{equation}
+where $\Delta dx$ and $\Delta dy$ are calculated using Equations~(\ref{eq:ddx}) and~(\ref{eq:ddy}).
+
+The distance measurement is optimized as:
+\begin{equation}
+    d \leftarrow \frac{p_x + h_l * \cos(\theta - \Delta \theta_l)}{\cos{\phi_l} * \sin(\theta - \Delta \theta_l)} - \Delta dx.  \label{eq:dita}
+\end{equation}
+Or, to increase numerical accuracy, if $p_y < p_x$:
+\begin{equation}
+    d \leftarrow \frac{p_y - h_l * \sin(\theta - \Delta \theta_l)}{\cos{\phi_l} * \cos(\theta - \Delta \theta_l)} - \Delta dy.  \label{eq:ditb}
+\end{equation}
+
+% makes the font a bit too small...:
+%\begin{equation}
+%    d \leftarrow \left\{ \begin{array}{rcl}
+%    \frac{p_x + h_l * \cos(\theta - \Delta \theta_l)}{\cos{\phi_l} * \sin(\theta - \Delta \theta_l)} - \Delta dx & \mbox{for} &  p_y > p_x \\
+%    \frac{p_y - h_l * \sin(\theta - \Delta \theta_l)}{\cos{\phi_l} * \cos(\theta - \Delta \theta_l)} - \Delta dy & \mbox{for} &  p_y =< p_x.
+%    \end{array}\right.
+%\end{equation}
+
+The parameters $d$ and $\theta$ are refined using these equations until they
+converge. This usually takes only 2 or 3 steps. In our implementation therefor
+used a fixed number of 10 iterations (following well established decimal
+tradition).
+
+Note, that we also tried to formulate a closed form inverse of
+Equation~(\ref{eq:p}). However, the solutions we found were not numericaly
+stable and given the limitted accuracy of the point clouds (millimeter accurate)
+the iterative approach seems more feasible.
 \section{Results}
 % error when reprojecting distance/position
 % position alignment
