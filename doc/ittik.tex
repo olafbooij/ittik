@@ -38,7 +38,7 @@ Generic point cloud software can be used to visualize and process such
 data.
 
 A drawback of the point clouds is that it is difficult to get the
-precise time for each of the 3d point measurements. In addition, it is
+precise time for each of the 3D point measurements. In addition, it is
 difficult to compute the exact origin of the cast LiDAR rays. A more
 general concern is that the point clouds do not reflect the dense and
 structured form of the LiDAR measurement.
@@ -124,7 +124,7 @@ In order to easily interpret the Velodyne data, the raw byte stream is
 preprocessed using a fixed process, as given in the User's Manual and
 Programming Guide. This process has two parts. The first part, computes for
 each laser fire from the laser id, the measured distance and measured
-rotational position, the 3d point location. The second part, computes
+rotational position, the 3D point location. The second part, computes
 for the raw intensity measurement, the surface reflectivity of the
 measured point. We will (for now) only focus on the first part.
 
@@ -146,7 +146,7 @@ In the following, we describe the main part of the preprocessing
 algorithm, taken from the User's Manual and Programming Guide. Some
 travial parts on rescaling the raw byte stream data is left out.
 
-The function to compute the 3d point $\mathbf{p}$, given a distance measurement $d$,
+The function to compute the 3D point $\mathbf{p}$, given a distance measurement $d$,
 the rotational position $\theta$ and the laser id $l$ is close to
 the formula:
 \begin{eqnarray}
@@ -262,20 +262,15 @@ stable and given the limitted accuracy of the point clouds (millimeter accurate)
 the iterative approach seems more feasible.
 
 \section{Results}
-% error when reprojecting distance/position
 To assess if the reverse method described in the previous section works
 correctly, we apply it on some of the KITTI data.
 
 We first apply the algorithm on a KITTI scan (see Figure~\ref{fig:example} to get the raw measurments and then
 apply the standard preprocesing algorithm, as described in
-Section~\ref{sec:preproc} to reconstruct back the 3d points. In theory these
+Section~\ref{sec:preproc} to reconstruct back the 3D points. In theory these
 reconstructed points should be the same as in the original scan. In practice, of
 course, there is the quantification error, while the KITTI point clouds are
 stored in millimeter precision.
-0.003289602
-0.0008532747
-4.090201e-16
-
 
 \begin{figure}
   \begin{center}
@@ -293,7 +288,11 @@ stored in millimeter precision.
   \end{center}
 \end{figure}
 
-
+The mean distance between the original 3D point and the reconstructed point for
+the example scan is 3.29 mm. Perhaps more interesting is the mean error of the
+distance of the point to the sensor: .85 mm. The angle of the point in the
+horizontal plane of the sensor is the same for the original and the
+reconstructed point. 
 
 % position alignment
 
