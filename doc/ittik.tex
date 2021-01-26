@@ -212,9 +212,11 @@ The laser id can perhaps be computed by determining the vertical
 direction of the point and matching it with the fixed $\phi_l$'s of each
 laser. However, it is easier to use the order of the points in the KITTI
 point clouds, which group the point per laser starting with the most
-upward pointing laser. The way to do this is described nicely in CITE.
+upward pointing laser. This approach is straightforward and described in nicely
+in CITE. The order of the vertical angles $\phi_l$ described in calibration
+can now be used to determine the laser id for each point.
 
-Getting the other parameters is not that straightforward. We solve it in
+Getting the other parameters is not that easy. We solve it in
 an iterative fashion. First, an approximate value of both the distance and
 the rotation is computed as initial values:
 \begin{eqnarray}
@@ -258,8 +260,37 @@ Note, that we also tried to formulate a closed form inverse of
 Equation~(\ref{eq:p}). However, the solutions we found were not numericaly
 stable and given the limitted accuracy of the point clouds (millimeter accurate)
 the iterative approach seems more feasible.
+
 \section{Results}
 % error when reprojecting distance/position
+To assess if the reverse method described in the previous section works
+correctly, we apply it on some of the KITTI data.
+
+We first apply the algorithm on a KITTI scan (see Figure~\ref{fig:example} to get the raw measurments and then
+apply the standard preprocesing algorithm, as described in
+Section~\ref{sec:preproc} to reconstruct back the 3d points. In theory these
+reconstructed points should be the same as in the original scan. In practice, of
+course, there is the quantification error, while the KITTI point clouds are
+stored in millimeter precision.
+
+\begin{figure}
+  \begin{center}
+    \subfigure[][LiDAR point cloud]
+      {
+       \includegraphics[width=.5\textwidth]{pointcloud.png}
+      }
+    \subfigure[][Image still]
+      {
+       \includegraphics[width=.4\textwidth]{image.jpg}
+      }
+      \caption{Example scan used in the results. This is scan number 71 and an
+      image still from the raw dateset \texttt{2011\_09\_26\_drive\_0002}.}
+  \label{fig:example}
+  \end{center}
+\end{figure}
+
+
+
 % position alignment
 
 \bibliographystyle{apalike}

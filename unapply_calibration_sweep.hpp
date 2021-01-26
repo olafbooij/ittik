@@ -6,7 +6,6 @@
 
 #include<calibration_kitti.hpp>
 #include<unapply_calibration_iter.hpp>
-#include<apply_calibration.hpp>
 
 // Get the probe order based vertical angle.
 auto determine_probe_order(const Calibration calibration)
@@ -45,15 +44,6 @@ struct SweepUncalibrator
     }
     auto probeId = probeOrder_.at(vertId_);
     auto [position, distanceUncor] = unapply_calibration_iter(point, kitti_probe_calibration().at(probeId));
-
-    // some debug code
-    auto pointAgain = apply_calibration(position, distanceUncor, kitti_probe_calibration().at(probeId));
-    std::cout.precision(7);
-    auto normrad = [](auto v){return v<M_PI?v:2*M_PI-v;};
-    std::cout << probeId << " " << point.transpose() << " " << position << " " << distanceUncor << " " << (point - pointAgain).norm()
-              << " " << normrad(fabs(atan2(point(0), point(1)) - atan2(pointAgain(0), pointAgain(1))))
-              << std::endl;
-
     return std::make_tuple(probeId, position, distanceUncor, vertId_);
   }
 };
