@@ -265,7 +265,7 @@ the iterative approach seems more feasible.
 To assess if the reverse method described in the previous section works
 correctly, we apply it on some of the KITTI data.
 
-We first apply the algorithm on a KITTI scan (see Figure~\ref{fig:example} to get the raw measurments and then
+We first apply the algorithm on an arbitrary KITTI scan (see Figure~\ref{fig:example} to get the raw measurments and then
 apply the standard preprocesing algorithm, as described in
 Section~\ref{sec:preproc} to reconstruct back the 3D points. In theory these
 reconstructed points should be the same as in the original scan. In practice, of
@@ -289,10 +289,28 @@ stored in millimeter precision.
 \end{figure}
 
 The mean distance between the original 3D point and the reconstructed point for
-the example scan is 3.29 mm. Perhaps more interesting is the mean error of the
-distance of the point to the sensor: .85 mm. The angle of the point in the
-horizontal plane of the sensor is the same for the original and the
-reconstructed point. 
+the scan is 3.29 mm. In Figure~\ref{fig:norms_error}, this is split over the
+different lasers sorted by vertical angle. It can be seen that lasers pointing
+down have an average error up to 14 mm. This is much larger than expected given
+the millimeter precision of the original points. 
+
+\begin{figure}
+    \centering
+    %\input{directions.pdf_tex}
+    \def\svgwidth{\columnwidth}
+    \scalebox{0.9}{
+    \def\svgwidth{.6 \columnwidth}
+      \input{norms_error.pdf_tex}
+    }
+    \caption{Mean 3D distance between the original point and reconstructed point
+    for each laser.}
+		\label{fig:norms_error}
+\end{figure}
+
+The angle of the point in the horizontal plane of the sensor is the same for the
+original and the reconstructed point. It is interesting to see that there is no
+error here. It seems thus that the main error is in the vertical direction.  The
+mean error of the distance of the point to the sensor is .85 mm.
 
 % position alignment
 
