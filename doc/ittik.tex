@@ -329,6 +329,13 @@ difference between the position of each point, due to the slightly different
 timing of each laser, but this should be very regular and much smaller. In
 Figure~\ref{subfig:raw_meas_simul} we simulated the expected rotations.
 
+\section{Conclusion}
+By reversing the Velodyne preprocessing, we can obtain the original measured
+depth and rotational position. However, there still seems to be something wrong.
+The cause is still unknown. It might be an error in the method, an error in the
+calibration file, the emmitted offset ``pos'', or a combination of these. Or, of
+course, it could be just a silly bug...
+
 %\begin{figure}
 %    \centering
 %    %\input{directions.pdf_tex}
@@ -380,6 +387,8 @@ Figure~\ref{subfig:raw_meas_simul} we simulated the expected rotations.
 \bibliographystyle{apalike}
 \bibliography{test}
 
+\end{document}
+
 \section*{Appendix}
 
 \begin{eqnarray}
@@ -403,7 +412,6 @@ Figure~\ref{subfig:raw_meas_simul} we simulated the expected rotations.
          \right)
 \end{eqnarray}
 
-\end{document}
 
 \section{Thingies to copy-paste}
 \subsection{subbla}
