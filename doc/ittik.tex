@@ -92,10 +92,9 @@ scene, have a different measurement time. Take for example laser \#41
 and laser \#46 (see Figure~\ref{fig:directions}). Verticaly, they are
 ``neighbors'', but horizontally they are 19 degrees apart.
 
-Thus, it is not easy to get information from the measurements of a
-single fire of all lasers. It is like a depth camera where only 64
-pixels are working spread over the image plane. A point cloud
-representations is much more useful.
+Thus, it is not easy to interpret the measurements of a single fire of all
+lasers. It is like a depth camera where only 64 pixels are working spread over
+the image plane. A point cloud representations is much more useful.
 
 Still, for this point cloud we should consider that the device for the
 example lasers has to rotate 19 degrees, before they measure the same
@@ -110,13 +109,20 @@ compensatad for, for each laser. For moving objects, however, this is of
 course more difficult.
 % ... example of moving object in motion corrected data
 
-Nevertheless, this project is mainly meant to counter another
+This project is mainly meant to counter another
 disadvantage of the point cloud representation. The spread of the
-lasers, and their non-monotinic firing behavior (more about that later),
-results in a non-uniform point cloud, hard to feed into standard image
-processing tools such as convolutional neural networks. This is the main
-reason to try to get the original Velodyne data back.
+lasers, results in a non-uniform point cloud, hard to feed into standard image
+processing tools such as convolutional neural networks. This is the main reason
+to try to get the original Velodyne data back.
 % ... example of piece of point cloud
+
+An extra note on the amount of measurements and the timing of the lasers. In the
+manual, it is stated that the device measures points at a rate of around 1.3 million
+per second. However, when looking at the timing of the device each pair of
+lasers is fired after $.73 \mu s$. If you would assume a monotic firig behavior
+of the device this would result in $\frac{2}{.73 10^{-6}} \approx 2.74$ million
+points per second. Later (Figure~\ref{fig:raw_meas}) we will indeed see that the
+device has a bit peculiar firing behavior.
 
 \section{Preprocessing}
 \label{sec:preproc}
@@ -166,7 +172,7 @@ $\phi_l$ are the horizontal and vertical direction, named vertCorrection
 and rotCorrection. The values $h_l$ and $b_l$ are the horizontal and
 vertical position, named horizOffsetCorrection and vertOffsetCorrection.
 
-It is close, but not complete. There's actually a non-symetric adjustment
+It is close, but not complete. There is actually a non-symetric adjustment
 for the $x$ and $y$ component. They are based on parameters $\Delta
 d_l$, $\Delta dx_l$ and $\Delta dy_l$, named distCorrection,
 distCorrectionX and distCorrectionY, which are obtained using a factory
@@ -315,12 +321,13 @@ error here. It seems thus that the main error is in the vertical direction.  The
 mean error of the distance of the point to the sensor is .85 mm.
 
 % position alignment
-Let us now look at the computed device rotational position per point. 
-Figure~\ref{fig:raw_meas} shows them for some of the points of the used scan. As
-can be seen the computed rotation almost aligns for each of the lasers. Still,
-there is a jitter vissible up to 2 mrad. We do expect some difference between
-the position of each point, due to the slightly different timing of each laser,
-but this should be very regular and much smaller.
+Let us now look at the computed device rotational position per point.
+Figure~\ref{subfig:raw_meas_measured} shows them for some of the points of the
+used scan. As can be seen the computed rotation almost aligns for each of the
+lasers. Still, there is a jitter vissible up to 2 mrad. We do expect some
+difference between the position of each point, due to the slightly different
+timing of each laser, but this should be very regular and much smaller. In
+Figure~\ref{subfig:raw_meas_simul} we simulated the expected rotations.
 
 %\begin{figure}
 %    \centering
@@ -339,26 +346,32 @@ but this should be very regular and much smaller.
 
 \begin{figure}
   \begin{center}
-    \subfigure[][as measured]
+    \subfigure[][measured]
       {
         \def\svgwidth{\columnwidth}
         \scalebox{0.9}{
         \def\svgwidth{.5 \columnwidth}
           \input{raw_meas.pdf_tex}
         }
+        \label{subfig:raw_meas_measured}
       }
-    \subfigure[][ideal simulation]
+    \subfigure[][expected]
       {
         \def\svgwidth{\columnwidth}
         \scalebox{0.9}{
         \def\svgwidth{.5 \columnwidth}
           \input{raw_meas_simul.pdf_tex}
         }
+        \label{subfig:raw_meas_simul}
       }
-    \caption{Comparison of the rotational position measurements between the
-    different lasers as determined by reverse method for each point.
-    Lasers are ordered here by there ID (not by the vertical angle). The figure
-    only shows a limitted range of 0 to 0.05 radians.}
+    \caption{Rotational position of the device for the measured points of the
+    different lasers.
+    Lasers are ordered here by their ID (not by the vertical angle). The figures
+    only show part of the scan in the range of 0 to 0.05 radians.
+    \subref{subfig:raw_meas_measured} The computed rotations from the point
+    cloud using the reverse method for each point.
+    \subref{subfig:raw_meas_simul} The expected pattern of the rotations
+    given the specs of the device.}
 		\label{fig:raw_meas}
   \end{center}
 \end{figure}
