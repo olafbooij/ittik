@@ -218,8 +218,8 @@ The laser id can perhaps be computed by determining the vertical
 direction of the point and matching it with the fixed $\phi_l$'s of each
 laser. However, it is easier to use the order of the points in the KITTI
 point clouds, which group the point per laser starting with the most
-upward pointing laser. This approach is straightforward and described in nicely
-in CITE. The order of the vertical angles $\phi_l$ described in calibration
+upward pointing laser. This approach is straightforward and described nicely
+in~\cite{triess2020}. The order of the vertical angles $\phi_l$ described in calibration
 can now be used to determine the laser id for each point.
 
 Getting the other parameters is not that easy. We solve it in
@@ -264,9 +264,8 @@ tradition).
 
 Note, that we also tried to formulate a closed form inverse of
 Equation~(\ref{eq:p}). However, the solutions we found were not
-numerically
-stable and given the limited accuracy of the point clouds (millimeter accurate)
-the iterative approach seems more feasible.
+numerically stable and given the limited accuracy of the point clouds
+(millimeter accurate) the iterative approach seems more feasible.
 
 \section{Results}
 To assess if the reverse method described in the previous section works
@@ -386,7 +385,7 @@ course, it could be just a silly bug...
 
 
 \bibliographystyle{apalike}
-\bibliography{test}
+\bibliography{ittik.bib}
 
 \end{document}
 
