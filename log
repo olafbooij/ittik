@@ -96,3 +96,12 @@ Okay, a +/- error: now the position error is independent. Can still be up to 8 m
 the distance error between the point and the reprojected point is quite high: up to 5 cm
 fixed that, was a similar +/- bug. Now its mostly under 1cm and under 1mm. Did not change the position error though.
 so.... was a different calibration file used?? Or the mm accuracy? Seems not the second, because there's a lot of regularity in the error.
+
+On the angle between two fires of a consecutive lasers:
+You would assume a uniform firing for the lasers. 1.3 M /s -> .77 microsec * 2 (because lasers fire in pairs) = 1.54 microsec.
+in which the device rotated 2pi*10 /s * 1.54 microsec = 96.8 microrad
+But the manual says .73 microsecond between each fire
+in which the device rotated 2pi*10 /s * .73 microsec = 45.9 microrad
+Clear that there some measurements dropped, as also visible in the measurements themselves
+
+

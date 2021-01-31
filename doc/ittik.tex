@@ -315,22 +315,52 @@ error here. It seems thus that the main error is in the vertical direction.  The
 mean error of the distance of the point to the sensor is .85 mm.
 
 % position alignment
-Let us now look at the computed device rotational position per point. In
-Figure~\ref{fig:raw_meas} 
+Let us now look at the computed device rotational position per point. 
+Figure~\ref{fig:raw_meas} shows them for some of the points of the used scan. As
+can be seen the computed rotation almost aligns for each of the lasers. Still,
+there is a jitter vissible up to 2 mrad. We do expect some difference between
+the position of each point, due to the slightly different timing of each laser,
+but this should be very regular and much smaller.
+
+%\begin{figure}
+%    \centering
+%    %\input{directions.pdf_tex}
+%    \def\svgwidth{\columnwidth}
+%    \scalebox{0.9}{
+%    \def\svgwidth{.6 \columnwidth}
+%      \input{raw_meas.pdf_tex}
+%    }
+%    \caption{Comparison of the rotational position measurements between the
+%    different lasers as determined by reverse method for each point.
+%    Lasers are ordered here by there ID (not by the vertical angle). The figure
+%    only shows a limitted range of 0 to 0.05 radians.}
+%		\label{fig:raw_meas}
+%\end{figure}
 
 \begin{figure}
-    \centering
-    %\input{directions.pdf_tex}
-    \def\svgwidth{\columnwidth}
-    \scalebox{0.9}{
-    \def\svgwidth{.6 \columnwidth}
-      \input{raw_meas.pdf_tex}
-    }
+  \begin{center}
+    \subfigure[][as measured]
+      {
+        \def\svgwidth{\columnwidth}
+        \scalebox{0.9}{
+        \def\svgwidth{.5 \columnwidth}
+          \input{raw_meas.pdf_tex}
+        }
+      }
+    \subfigure[][ideal simulation]
+      {
+        \def\svgwidth{\columnwidth}
+        \scalebox{0.9}{
+        \def\svgwidth{.5 \columnwidth}
+          \input{raw_meas_simul.pdf_tex}
+        }
+      }
     \caption{Comparison of the rotational position measurements between the
     different lasers as determined by reverse method for each point.
     Lasers are ordered here by there ID (not by the vertical angle). The figure
     only shows a limitted range of 0 to 0.05 radians.}
 		\label{fig:raw_meas}
+  \end{center}
 \end{figure}
 
 
