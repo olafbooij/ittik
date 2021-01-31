@@ -89,7 +89,7 @@ rays are shown. As can be seen the vertical view-angle is approximately
 It is important to understand the implications of this horizontal view
 angle. Points from the same scan that are close to each other in the
 scene, have a different measurement time. Take for example laser \#41
-and laser \#46 (see Figure~\ref{fig:directions}). Verticaly, they are
+and laser \#46 (see Figure~\ref{fig:directions}). Vertically, they are
 ``neighbors'', but horizontally they are 19 degrees apart.
 
 Thus, it is not easy to interpret the measurements of a single fire of all
@@ -102,10 +102,10 @@ structure. Taking the rotation speed into account, two very close points
 in the scene will have been measured with a time difference of
 $\frac{19}{360} 100 \, \mbox{ms}= 5 \, \mbox{ms}$.
 
-This time difference has to be taken into acount of course when
+This time difference has to be taken into account of course when
 processing the data. KITTI contains, in addition to the ``raw'' point
 clouds, motion corrected data, in which the vehicle motion is
-compensatad for, for each laser. For moving objects, however, this is of
+compensated for, for each laser. For moving objects, however, this is of
 course more difficult.
 % ... example of moving object in motion corrected data
 
@@ -119,7 +119,7 @@ to try to get the original Velodyne data back.
 An extra note on the amount of measurements and the timing of the lasers. In the
 manual, it is stated that the device measures points at a rate of around 1.3 million
 per second. However, when looking at the timing of the device each pair of
-lasers is fired after $.73 \mu s$. If you would assume a monotic firig behavior
+lasers is fired after $.73 \mu s$. If you would assume a monotonic firing behavior
 of the device this would result in $\frac{2}{.73 10^{-6}} \approx 2.74$ million
 points per second. Later (Figure~\ref{fig:raw_meas}) we will indeed see that the
 device has a bit peculiar firing behavior.
@@ -150,7 +150,7 @@ such as in Figure~\ref{fig:directions}.
 
 In the following, we describe the main part of the preprocessing
 algorithm, taken from the User's Manual and Programming Guide. Some
-travial parts on rescaling the raw byte stream data is left out.
+trivial parts on rescaling the raw byte stream data is left out.
 
 The function to compute the 3D point $\mathbf{p}$, given a distance measurement $d$,
 the rotational position $\theta$ and the laser id $l$ is close to
@@ -172,7 +172,7 @@ $\phi_l$ are the horizontal and vertical direction, named vertCorrection
 and rotCorrection. The values $h_l$ and $b_l$ are the horizontal and
 vertical position, named horizOffsetCorrection and vertOffsetCorrection.
 
-It is close, but not complete. There is actually a non-symetric adjustment
+It is close, but not complete. There is actually a non-symmetric adjustment
 for the $x$ and $y$ component. They are based on parameters $\Delta
 d_l$, $\Delta dx_l$ and $\Delta dy_l$, named distCorrection,
 distCorrectionX and distCorrectionY, which are obtained using a factory
@@ -200,7 +200,7 @@ distance adjustment:
   \label{eq:p}
 \end{eqnarray}
 
-Apart from some rescaling that is left out, we also emmitted some offset
+Apart from some rescaling that is left out, we also emitted some offset
 from the process called ``pos'' in the User's Manual, which is not
 explained further. This needs further investigation.
 
@@ -263,16 +263,17 @@ used a fixed number of 10 iterations (following well established decimal
 tradition).
 
 Note, that we also tried to formulate a closed form inverse of
-Equation~(\ref{eq:p}). However, the solutions we found were not numericaly
-stable and given the limitted accuracy of the point clouds (millimeter accurate)
+Equation~(\ref{eq:p}). However, the solutions we found were not
+numerically
+stable and given the limited accuracy of the point clouds (millimeter accurate)
 the iterative approach seems more feasible.
 
 \section{Results}
 To assess if the reverse method described in the previous section works
 correctly, we apply it on some of the KITTI data.
 
-We first apply the algorithm on an arbitrary KITTI scan (see Figure~\ref{fig:example} to get the raw measurments and then
-apply the standard preprocesing algorithm, as described in
+We first apply the algorithm on an arbitrary KITTI scan (see Figure~\ref{fig:example} to get the raw measurements and then
+apply the standard preprocessing algorithm, as described in
 Section~\ref{sec:preproc} to reconstruct back the 3D points. In theory these
 reconstructed points should be the same as in the original scan. In practice, of
 course, there is the quantification error, while the KITTI point clouds are
@@ -289,7 +290,7 @@ stored in millimeter precision.
        \includegraphics[width=.4\textwidth]{image.jpg}
       }
       \caption{Example scan used in the results. This is scan number 71 and an
-      image still from the raw dateset \texttt{2011\_09\_26\_drive\_0002}.}
+      image still from the raw dataset \texttt{2011\_09\_26\_drive\_0002}.}
   \label{fig:example}
   \end{center}
 \end{figure}
@@ -324,7 +325,7 @@ mean error of the distance of the point to the sensor is .85 mm.
 Let us now look at the computed device rotational position per point.
 Figure~\ref{subfig:raw_meas_measured} shows them for some of the points of the
 used scan. As can be seen the computed rotation almost aligns for each of the
-lasers. Still, there is a jitter vissible up to 2 mrad. We do expect some
+lasers. Still, there is a jitter visible up to 2 mrad. We do expect some
 difference between the position of each point, due to the slightly different
 timing of each laser, but this should be very regular and much smaller. In
 Figure~\ref{subfig:raw_meas_simul} we simulated the expected rotations.
@@ -333,7 +334,7 @@ Figure~\ref{subfig:raw_meas_simul} we simulated the expected rotations.
 By reversing the Velodyne preprocessing, we can obtain the original measured
 depth and rotational position. However, there still seems to be something wrong.
 The cause is still unknown. It might be an error in the method, an error in the
-calibration file, the emmitted offset ``pos'', or a combination of these. Or, of
+calibration file, the emitted offset ``pos'', or a combination of these. Or, of
 course, it could be just a silly bug...
 
 %\begin{figure}
@@ -347,7 +348,7 @@ course, it could be just a silly bug...
 %    \caption{Comparison of the rotational position measurements between the
 %    different lasers as determined by reverse method for each point.
 %    Lasers are ordered here by there ID (not by the vertical angle). The figure
-%    only shows a limitted range of 0 to 0.05 radians.}
+%    only shows a limited range of 0 to 0.05 radians.}
 %		\label{fig:raw_meas}
 %\end{figure}
 
