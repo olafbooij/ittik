@@ -1,4 +1,6 @@
-../../../plot_unapply_error ../../../tmp/0000000071.txt norms_error
+../../../plot_unapply_error ../../../tmp/0000000071.txt norms_error raw_meas
 gnuplot norms_error.gp
+gnuplot raw_meas.gp
 inkscape -D -z --file=norms_error.svg --export-pdf=norms_error.pdf --export-latex
-mv norms_error.pdf* ../../
+inkscape -D -z --file=raw_meas.svg --export-pdf=raw_meas.pdf --export-latex
+mv *.pdf* ../../

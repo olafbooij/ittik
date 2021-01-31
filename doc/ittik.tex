@@ -56,7 +56,7 @@ the device is rotating at a rate of 10 Hz, resulting in approximately
 second. The 64 lasers do not fire at the same time. Instead, at each
 timestep, two of the lasers fire in a fixed sequence. Because the device
 keeps on rotating, each pair of points has a unique measurement time as
-well as a unique device orientation.
+well as a unique device rotational position.
 
 For each firing laser, the distance and reflectivity of the scene point
 is measured. In addition, for each lower and upper block of 32 laser
@@ -292,7 +292,9 @@ The mean distance between the original 3D point and the reconstructed point for
 the scan is 3.29 mm. In Figure~\ref{fig:norms_error}, this is split over the
 different lasers sorted by vertical angle. It can be seen that lasers pointing
 down have an average error up to 14 mm. This is much larger than expected given
-the millimeter precision of the original points. 
+the millimeter precision of the original points. This could also be related with
+the distance of the points in the scene (the distance is on average smaller for
+lasers pointing down).
 
 \begin{figure}
     \centering
@@ -313,6 +315,24 @@ error here. It seems thus that the main error is in the vertical direction.  The
 mean error of the distance of the point to the sensor is .85 mm.
 
 % position alignment
+Let us now look at the computed device rotational position per point. In
+Figure~\ref{fig:raw_meas} 
+
+\begin{figure}
+    \centering
+    %\input{directions.pdf_tex}
+    \def\svgwidth{\columnwidth}
+    \scalebox{0.9}{
+    \def\svgwidth{.6 \columnwidth}
+      \input{raw_meas.pdf_tex}
+    }
+    \caption{Comparison of the rotational position measurements between the
+    different lasers as determined by reverse method for each point.
+    Lasers are ordered here by there ID (not by the vertical angle). The figure
+    only shows a limitted range of 0 to 0.05 radians.}
+		\label{fig:raw_meas}
+\end{figure}
+
 
 \bibliographystyle{apalike}
 \bibliography{test}
