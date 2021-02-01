@@ -41,8 +41,8 @@ namespace nonsi {
       _probeCalibration.rotCorrection         / 180 * M_PI,
       _probeCalibration.vertCorrection        / 180 * M_PI,
       _probeCalibration.distCorrection        / 100,
-      _probeCalibration.distCorrectionX       / 100,
-      _probeCalibration.distCorrectionY       / 100,
+      _probeCalibration.distCorrection        / 100,
+      _probeCalibration.distCorrection        / 100,
       _probeCalibration.vertOffsetCorrection  / 100,
       _probeCalibration.horizOffsetCorrection / 100
     };
