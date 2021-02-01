@@ -10,7 +10,6 @@ int main(int argc, char* argv[])
 
   std::ifstream sweepFile(argv[1]);
   std::ofstream normsFile(argv[2]);
-  std::ofstream rawMeasFile(argv[3]);
   Eigen::Vector3d point;
   double refl;
 
@@ -31,7 +30,6 @@ int main(int argc, char* argv[])
     //        << " " << fabs(point.norm() - pointAgain.norm())
     //        << " " << normrad(fabs(atan2(point(0), point(1)) - atan2(pointAgain(0), pointAgain(1))))
     //        << std::endl;
-    rawMeasFile << probeId << " " << position << " " << distanceUncor << std::endl;
     auto runmean = [&n](auto& m, auto v){m = (n * m + v) / (n + 1);};
     auto runmeanc = [](auto& m, auto v, auto n){m = (n * m + v) / (n + 1);};
     ++n;
