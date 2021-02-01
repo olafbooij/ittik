@@ -120,7 +120,7 @@ An extra note on the amount of measurements and the timing of the lasers. In the
 manual, it is stated that the device measures points at a rate of around 1.3 million
 per second. However, when looking at the timing of the device each pair of
 lasers is fired after $.73 \mu s$. If you would assume a monotonic firing behavior
-of the device this would result in $\frac{2}{.73 10^{-6}} \approx 2.74$ million
+of the device this would result in $\frac{2}{.73 \cdot 10^{-6}} \approx 2.74$ million
 points per second. Later (Figure~\ref{fig:raw_meas}) we will indeed see that the
 device has a bit peculiar firing behavior.
 
@@ -205,7 +205,7 @@ from the process called ``pos'' in the User's Manual, which is not
 explained further. This needs further investigation.
 
 % Note, that the number of bytes used by the device to transmit its
-% measurements is kept low The storage of the (uncompressed) millimeter
+% measurements is kept low. The storage of the (uncompressed) millimeter
 % accurate point clouds is about 2 times larger than the format used by
 % the sensor. 17+17+11+7 bit vs 16+8
 
