@@ -11,7 +11,7 @@
 int main()
 {
   //std::cout << apply_calibration(2.1, 4.3, example_probe_calibration()).transpose() << std::endl;
-  assert((apply_calibration(2.1, 4.3, example_probe_calibration()) - Eigen::Vector3d(4.59269, -2.57884, -1.00061)).norm() < 1e-4);
+  assert((apply_calibration(2.1, 4.3, example_probe_calibration()) - Eigen::Vector3d(3.66242, -2.08453, -0.783748)).norm() < 1e-4);
   assert(fabs(unapply_calibration(apply_calibration(3.8 , 4.3 , example_probe_calibration()), example_probe_calibration()).first - 3.8 ) < 1e-5);
   assert(fabs(unapply_calibration(apply_calibration(2.8 , 4.3 , example_probe_calibration()), example_probe_calibration()).first - 2.8 ) < 1e-5);
   assert(fabs(unapply_calibration(apply_calibration(2.8 , 1.3 , example_probe_calibration()), example_probe_calibration()).first - 2.8 ) < 1e-5);
