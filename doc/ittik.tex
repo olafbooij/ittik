@@ -127,8 +127,7 @@ device has a bit peculiar firing behavior.
 \section{Preprocessing}
 \label{sec:preproc}
 In order to easily interpret the Velodyne data, the raw byte stream is
-preprocessed using a fixed process, as given in the User's Manual and
-Programming Guide. This process has two parts. The first part, computes for
+preprocessed using a fixed process. This process has two parts. The first part, computes for
 each laser fire from the laser id, the measured distance and measured
 rotational position, the 3D point location. The second part, computes
 for the raw intensity measurement, the surface reflectivity of the
@@ -148,9 +147,18 @@ website in the standard xml form:
 this file are used in ITTIK, and for visualizations in this document
 such as in Figure~\ref{fig:directions}.
 
+We first thought this was the preprocessing algorithm described in the
+User's Manual and Programming Guide. However, after implementing and
+trying it out, this seemed not to be correct. For later reference, and
+possible use for newer datasets, it is given in
+Appendix~\ref{app:manualalg}. We found out by turning of some parts in
+that quite complicated and hard to reverse algorithm, that the actual
+algorithm used is much simpler. In addition, it does not use some of the
+calibration parameters, which is actually a bit strange.
+
 In the following, we describe the main part of the preprocessing
-algorithm, taken from the User's Manual and Programming Guide. Some
-trivial parts on rescaling the raw byte stream data is left out.
+algorithm. Some trivial parts on rescaling the raw byte stream data is
+left out.
 
 The function to compute the 3D point $\mathbf{p}$, given a distance measurement $d$,
 the rotational position $\theta$ and the laser id $l$ is close to
@@ -383,13 +391,68 @@ course, it could be just a silly bug...
   \end{center}
 \end{figure}
 
+\appendix
+
+\section*{Appendix A - Preprocessing according to the manual}
+\label{app:manualalg}
+
+The function to compute the 3D point $\mathbf{p}$, given a distance measurement $d$,
+the rotational position $\theta$ and the laser id $l$ is close to
+the formula:
+\begin{eqnarray}
+  \mathbf{p'} =
+  f'(d, \theta, l, \Delta d) &=& \left(
+           \begin{array}{l}
+             (d + \Delta d) * \cos{\phi_l} * \sin(\theta - \Delta \theta_l) - h_l \cos(\theta - \Delta \theta_l) \\
+             (d + \Delta d) * \cos{\phi_l} * \cos(\theta - \Delta \theta_l) + h_l \sin(\theta - \Delta \theta_l) \\
+             (d + \Delta d) * \sin{\phi_l} + v_l
+           \end{array}
+         \right),
+  \label{eq:ptilde}
+\end{eqnarray}
+in which the variables with subscript $l$ are the calibration parameters
+specific to laser $l$ relative to the device. The values $\theta_l$ and
+$\phi_l$ are the horizontal and vertical direction, named vertCorrection
+and rotCorrection. The values $h_l$ and $b_l$ are the horizontal and
+vertical position, named horizOffsetCorrection and vertOffsetCorrection.
+
+It is close, but not complete. There is actually a non-symmetric adjustment
+for the $x$ and $y$ component. They are based on parameters $\Delta
+d_l$, $\Delta dx_l$ and $\Delta dy_l$, named distCorrection,
+distCorrectionX and distCorrectionY, which are obtained using a factory
+calibration procedure with objects placed at specific positions from the
+sensor.  These parameters are used as follows to get $x$ and $y$
+specific distance adjustments:
+\begin{eqnarray}
+  \Delta dx &=& \Delta dx_l + \frac{f_x'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dx_l) - 2.40}{25.04 - 2.40}  \label{eq:ddx} \\
+  \Delta dy &=& \Delta dy_l + \frac{f_y'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dy_l) - 1.93}{25.04 - 1.93}, \label{eq:ddy}
+\end{eqnarray}
+with $f'(\cdot) = \left(f_x'(\cdot) , f_y'(\cdot) , f_z'(\cdot) \right)^T$.
+
+These adjustment are then used for computing the actual point, with the
+interesting note that the $z$ value is computed using the $y$-specific
+distance adjustment:
+\begin{eqnarray}
+  \mathbf{p} =
+  f(d, \theta, l) &=& \left(
+           \begin{array}{l}
+              f_x'(d, \theta, l, \Delta dx) \\
+              f_y'(d, \theta, l, \Delta dy) \\
+              f_z'(d, \theta, l, \Delta dy)
+           \end{array}
+         \right).
+  \label{eq:p}
+\end{eqnarray}
+
+Apart from some rescaling that is left out, we also emitted some offset
+from the process called ``pos'' in the User's Manual, which is not
+explained further. This needs further investigation.
 
 \bibliographystyle{apalike}
 \bibliography{ittik.bib}
 
 \end{document}
 
-\section*{Appendix}
 
 \begin{eqnarray}
   d_c &=& d + \Delta d_l \nonumber \\
