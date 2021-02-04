@@ -12,13 +12,13 @@ int main()
 {
   //std::cout << apply_calibration(2.1, 4.3, example_probe_calibration()).transpose() << std::endl;
   assert((apply_calibration(2.1, 4.3, example_probe_calibration()) - Eigen::Vector3d(4.57027, -2.59386, -1.0072)).norm() < 1e-4);
-  assert(fabs(unapply_calibration(apply_calibration(3.8 , 4.3 , example_probe_calibration()), example_probe_calibration()).first - 3.8 ) < 1e-5);
+  assert(fabs(unapply_calibration(apply_calibration(3.8 , 4.3 , example_probe_calibration()), example_probe_calibration()).first - 3.8 + 2*M_PI) < 1e-5);
   assert(fabs(unapply_calibration(apply_calibration(2.8 , 4.3 , example_probe_calibration()), example_probe_calibration()).first - 2.8 ) < 1e-5);
   assert(fabs(unapply_calibration(apply_calibration(2.8 , 1.3 , example_probe_calibration()), example_probe_calibration()).first - 2.8 ) < 1e-5);
   assert(fabs(unapply_calibration(apply_calibration(0.8 , 19.3, example_probe_calibration()), example_probe_calibration()).first - 0.8 ) < 1e-5);
   assert(fabs(unapply_calibration(apply_calibration(3.14, 19.3, example_probe_calibration()), example_probe_calibration()).first - 3.14) < 1e-5);
   assert(fabs(unapply_calibration(apply_calibration(3.15, 19.3, example_probe_calibration()), example_probe_calibration()).first - 3.15) < 1e-5);
-  assert(fabs(unapply_calibration(apply_calibration(6.15, 19.3, example_probe_calibration()), example_probe_calibration()).first - 6.15) < 1e-5);
+  assert(fabs(unapply_calibration(apply_calibration(6.15, 19.3, example_probe_calibration()), example_probe_calibration()).first - 6.15 + 2*M_PI) < 1e-5);
   assert(fabs(unapply_calibration(apply_calibration(3.8 , 4.3 , example_probe_calibration()), example_probe_calibration()).second - 4.3 ) < 1e-4);
   assert(fabs(unapply_calibration(apply_calibration(2.8 , 4.3 , example_probe_calibration()), example_probe_calibration()).second - 4.3 ) < 1e-4);
   assert(fabs(unapply_calibration(apply_calibration(2.8 , 1.3 , example_probe_calibration()), example_probe_calibration()).second - 1.3 ) < 1e-4);
