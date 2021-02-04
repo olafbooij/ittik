@@ -3,7 +3,7 @@
 #include<Eigen/Core>
 #include<calibration_common.hpp>
 
-// A direct, but rather unstable algorithm to unapply the velodyne calibration,
+// An algorithm to unapply the velodyne calibration,
 // i.e. compute back the distance measurement and rotational position from a 3d
 // point.
 // Does not consider some scaling final steps, nor the reflectivity value

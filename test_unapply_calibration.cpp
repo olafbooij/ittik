@@ -4,7 +4,6 @@
 #include<calibration_common.hpp>
 #include<apply_calibration.hpp>
 #include<unapply_calibration.hpp>
-#include<unapply_calibration_iter.hpp>
 
 #include<calibration_kitti.hpp>
 
@@ -40,14 +39,6 @@ int main()
       std::cout << pointAgain.transpose() << std::endl;
       std::cout << (point - pointAgain).norm() << std::endl;
     }
-    {
-      auto [position, distanceUncor] = unapply_calibration_iter(point, kitti_probe_calibration().at(29));
-      std::cout << position << " " << distanceUncor << std::endl;
-      auto pointAgain = apply_calibration(position, distanceUncor, kitti_probe_calibration().at(29));
-      std::cout << point.transpose() << std::endl;
-      std::cout << pointAgain.transpose() << std::endl;
-      std::cout << (point - pointAgain).norm() << std::endl;
-    }
   }
 
   if(0)
@@ -64,10 +55,6 @@ int main()
     Eigen::Vector3d pointAgain{accudown(point(0), 1000), accudown(point(1), 1000), accudown(point(2), 1000)};
     auto measAgainLess = unapply_calibration(pointAgain, kitti_probe_calibration().at(probeId));
     std::cout << measAgainLess.first << " " << measAgainLess.second << std::endl;
-    auto measAgainLessIter = unapply_calibration_iter(pointAgain, kitti_probe_calibration().at(probeId));
-    std::cout << measAgainLessIter.first << " " << measAgainLessIter.second << std::endl;
-    assert(fabs(measAgainLessIter.first - meas.first) < 1e-4);
-    assert(fabs(measAgainLessIter.second - meas.second) < 1e-2);
   }
 
   {
@@ -79,15 +66,6 @@ int main()
     int probeId = 51;
     {
       auto meas = unapply_calibration(point, kitti_probe_calibration().at(probeId));
-      std::cout << meas.first << " " << meas.second << std::endl;
-      auto pointAgain = apply_calibration(meas.first, meas.second, kitti_probe_calibration().at(probeId));
-      std::cout << pointAgain.transpose() << std::endl;
-      std::cout << (point - pointAgain).norm()
-                << " " << fabs(atan2(point(0), point(1)) - atan2(pointAgain(0), pointAgain(1)))
-                << std::endl;
-    }
-    {
-      auto meas = unapply_calibration_iter(point, kitti_probe_calibration().at(probeId));
       std::cout << meas.first << " " << meas.second << std::endl;
       auto pointAgain = apply_calibration(meas.first, meas.second, kitti_probe_calibration().at(probeId));
       std::cout << pointAgain.transpose() << std::endl;
