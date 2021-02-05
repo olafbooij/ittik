@@ -47,6 +47,8 @@ ITTIK tries to get back the raw LiDAR sensor data by undoing the steps
 performed during the KITTI preprocessing. It does so using the KITTI
 point clouds, as well as the available calibration data.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Velodyne data}
 % sensor
 The LiDAR sensor used for the KITTI dataset is a Velodyne HDL-64E. This
@@ -124,6 +126,8 @@ of the device this would result in $\frac{2}{.73 \cdot 10^{-6}} \approx 2.74$ mi
 points per second. Later (Figure~\ref{fig:raw_meas}) we will indeed see that the
 device has a bit peculiar firing behavior.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Preprocessing}
 \label{sec:preproc}
 In order to easily interpret the Velodyne data, the raw byte stream is
@@ -151,7 +155,7 @@ We first thought this was the preprocessing algorithm described in the
 User's Manual and Programming Guide. However, after implementing and
 trying it out, this seemed not to be correct. For later reference, and
 possible use for newer datasets, it is given in
-Appendix~\ref{app:manualalg}. We found out by turning of some parts in
+Appendix~\ref{app:manualprepro}. We found out by turning of some parts in
 that quite complicated and hard to reverse algorithm, that the actual
 algorithm used is much simpler. In addition, it does not use some of the
 calibration parameters, which is actually a bit strange.
@@ -161,8 +165,199 @@ algorithm. Some trivial parts on rescaling the raw byte stream data is
 left out.
 
 The function to compute the 3D point $\mathbf{p}$, given a distance measurement $d$,
-the rotational position $\theta$ and the laser id $l$ is close to
-the formula:
+the rotational position $\theta$ and the laser id $l$ is:
+\begin{eqnarray}
+  \mathbf{p} =
+  f(d, \theta, l) &=& \left(
+           \begin{array}{l}
+             (d + \Delta d_l) * \cos{\phi_l} * \sin(\theta - \Delta \theta_l) - h_l \cos(\theta - \Delta \theta_l) \\
+             (d + \Delta d_l) * \cos{\phi_l} * \cos(\theta - \Delta \theta_l) + h_l \sin(\theta - \Delta \theta_l) \\
+             (d + \Delta d_l) * \sin{\phi_l} + v_l
+           \end{array}
+         \right),
+  \label{eq:p_simple}
+\end{eqnarray}
+in which the variables with subscript $l$ are the calibration parameters
+specific to laser $l$ relative to the device. The values $\theta_l$ and
+$\phi_l$ are the horizontal and vertical direction, named vertCorrection
+and rotCorrection. The values $h_l$ and $b_l$ are the horizontal and
+vertical position, named horizOffsetCorrection and vertOffsetCorrection,
+and $\Delta d_l$ is the distance correction, named distCorrection.
+
+Apart from some rescaling that is left out, we also emitted some offset
+from the process called ``pos'' in the User's Manual, which is not
+explained further. This needs further investigation.
+
+% Note, that the number of bytes used by the device to transmit its
+% measurements is kept low. The storage of the (uncompressed) millimeter
+% accurate point clouds is about 2 times larger than the format used by
+% the sensor. 17+17+11+7 bit vs 16+8
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reversing the preprocessing}
+\label{sec:reverse}
+The aim is to reverse Equation~(\ref{eq:p}), getting back the distance
+measurement $d$, the rotational position of the device $\theta$ and the
+laser id $l$ given a point $p$.
+
+The laser id can perhaps be computed by determining the vertical
+direction of the point and matching it with the fixed $\phi_l$'s of each
+laser. However, it is easier to use the order of the points in the KITTI
+point clouds, which group the point per laser starting with the most
+upward pointing laser. This approach is straightforward and described nicely
+in~\cite{triess2020}. The order of the vertical angles $\phi_l$
+described in calibration can now be used to determine the laser id for
+each point.
+
+Getting the other parameters is quite straightforward. We give the
+equations here.
+
+\begin{eqnarray}
+  \theta &=& \atantwo\left(\mathbf{p}_x, \mathbf{p}_y\right) + \atantwo\left(h_l, \sqrt{\mathbf{p}_x^2 + \mathbf{p}_y^2}\right) + \Delta \theta_l, \\
+  d &=& \frac{\sqrt{\mathbf{p}_x^2 + \mathbf{p}_y^2 - h_l^2}}{\cos(\phi_l)} - \Delta d.
+\end{eqnarray}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results}
+To assess if the reverse method described in the previous section works
+correctly, we apply it on some of the KITTI data.
+
+We first apply the algorithm on an arbitrary KITTI scan (see Figure~\ref{fig:example} to get the raw measurements and then
+apply the standard preprocessing algorithm, as described in
+Section~\ref{sec:preproc} to reconstruct back the 3D points. In theory these
+reconstructed points should be the same as in the original scan. In practice, of
+course, there is the quantification error, while the KITTI point clouds are
+stored in millimeter precision.
+
+\begin{figure}
+  \begin{center}
+    \subfigure[][LiDAR point cloud]
+      {
+       \includegraphics[width=.5\textwidth]{pointcloud.png}
+      }
+    \subfigure[][Image still]
+      {
+       \includegraphics[width=.4\textwidth]{image.jpg}
+      }
+      \caption{Example scan used in the results. This is scan number 71 and an
+      image still from the raw dataset \texttt{2011\_09\_26\_drive\_0002}.}
+  \label{fig:example}
+  \end{center}
+\end{figure}
+
+The mean distance between the original 3D point and the reconstructed point for
+the scan is 2.88 mm. In Figure~\ref{fig:norms_error}, this is split over the
+different lasers sorted by vertical angle. It can be seen that lasers pointing
+down have an average error up to 11 mm. This is much larger than expected given
+the millimeter precision of the original points. This could also be related with
+the distance of the points in the scene (the distance is on average smaller for
+lasers pointing down).
+
+\begin{figure}
+    \centering
+    %\input{directions.pdf_tex}
+    \def\svgwidth{\columnwidth}
+    \scalebox{0.9}{
+    \def\svgwidth{.6 \columnwidth}
+      \input{norms_error.pdf_tex}
+    }
+    \caption{Mean 3D distance between the original point and reconstructed point
+    for each laser.}
+		\label{fig:norms_error}
+\end{figure}
+
+The angle of the point in the horizontal plane of the sensor is the same for the
+original and the reconstructed point. It is interesting to see that there is no
+error here. It seems thus that the main error is in the vertical direction.  The
+mean error of the distance of the point to the sensor is .77 mm.
+
+% position alignment
+Let us now look at the computed device rotational position per point.
+Figure~\ref{subfig:raw_meas_measured} shows them for some of the points of the
+used scan. As can be seen the computed rotation almost aligns for each of the
+lasers. There is only a small jitter visible up to .3 mrad. A large part, but
+not all, can be explained by the discretization error, due to the mm accuracy of
+the point clouds.In
+%Figure~\ref{subfig:raw_meas_simul} we simulated the expected rotations.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+By reversing the Velodyne preprocessing, we can obtain the original measured
+depth and rotational position. However, there still seems to be something wrong.
+The cause is still unknown. It might be an error in the method, an error in the
+calibration file, the emitted offset ``pos'', or a combination of these. Or, of
+course, it could be just a silly bug...
+
+The used preprocessing is different from what the User's Manual and Programming
+Guide, with version number \texttt{63HDL64E S2 Rev F DEC11}, describes. Perhaps
+an older version of the firmware was used corresponding to a different
+preprocessing. What is extra strange is that the given calibration file lists
+calibration parameters (distCorrectionX and distCorrectionY) that apparently
+were not used.
+
+%\begin{figure}
+%    \centering
+%    %\input{directions.pdf_tex}
+%    \def\svgwidth{\columnwidth}
+%    \scalebox{0.9}{
+%    \def\svgwidth{.6 \columnwidth}
+%      \input{raw_meas.pdf_tex}
+%    }
+%    \caption{Comparison of the rotational position measurements between the
+%    different lasers as determined by reverse method for each point.
+%    Lasers are ordered here by there ID (not by the vertical angle). The figure
+%    only shows a limited range of 0 to 0.05 radians.}
+%		\label{fig:raw_meas}
+%\end{figure}
+
+\begin{figure}
+  \begin{center}
+    \subfigure[][measured]
+      {
+        \def\svgwidth{\columnwidth}
+        \scalebox{0.9}{
+        \def\svgwidth{.5 \columnwidth}
+          \input{raw_meas.pdf_tex}
+        }
+        \label{subfig:raw_meas_measured}
+      }
+    %\subfigure[][expected]
+    %  {
+    %    \def\svgwidth{\columnwidth}
+    %    \scalebox{0.9}{
+    %    \def\svgwidth{.5 \columnwidth}
+    %      \input{raw_meas_simul.pdf_tex}
+    %    }
+    %    \label{subfig:raw_meas_simul}
+    %  }
+    \caption{Rotational position of the device for the measured points of the
+    different lasers.
+    Lasers are ordered here by their ID (not by the vertical angle). The figures
+    only show part of the scan in the range of 0 to 0.05 radians.
+    \subref{subfig:raw_meas_measured} The computed rotations from the point
+    cloud using the reverse method for each point.
+    %\subref{subfig:raw_meas_simul} The expected pattern of the rotations
+    %given the specs of the device.
+    }
+		\label{fig:raw_meas}
+  \end{center}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+
+\section*{Appendix A - Preprocessing according to the manual}
+\label{app:manualprepro}
+
+According to the User's Manual and Programming Guide, the preprocessing of the
+raw Velodyne data is a bit more complicated.
+
+We start with a similar function as in Equation~\ref{eq:p_simple}, this time
+taking an extra paramater $\Delta d$:
 \begin{eqnarray}
   \mathbf{p'} =
   f'(d, \theta, l, \Delta d) &=& \left(
@@ -171,22 +366,16 @@ the formula:
              (d + \Delta d) * \cos{\phi_l} * \cos(\theta - \Delta \theta_l) + h_l \sin(\theta - \Delta \theta_l) \\
              (d + \Delta d) * \sin{\phi_l} + v_l
            \end{array}
-         \right),
+         \right).
   \label{eq:ptilde}
 \end{eqnarray}
-in which the variables with subscript $l$ are the calibration parameters
-specific to laser $l$ relative to the device. The values $\theta_l$ and
-$\phi_l$ are the horizontal and vertical direction, named vertCorrection
-and rotCorrection. The values $h_l$ and $b_l$ are the horizontal and
-vertical position, named horizOffsetCorrection and vertOffsetCorrection.
 
-It is close, but not complete. There is actually a non-symmetric adjustment
-for the $x$ and $y$ component. They are based on parameters $\Delta
-d_l$, $\Delta dx_l$ and $\Delta dy_l$, named distCorrection,
-distCorrectionX and distCorrectionY, which are obtained using a factory
-calibration procedure with objects placed at specific positions from the
-sensor.  These parameters are used as follows to get $x$ and $y$
-specific distance adjustments:
+Then, there is a non-symmetric adjustment for the $x$ and $y$ component. They
+are based on parameters $\Delta d_l$, $\Delta dx_l$ and $\Delta dy_l$, named
+distCorrection, distCorrectionX and distCorrectionY, which are obtained using a
+factory calibration procedure with objects placed at specific positions from the
+sensor. These parameters are used as follows to get $x$ and $y$ specific
+distance adjustments:
 \begin{eqnarray}
   \Delta dx &=& \Delta dx_l + \frac{f_x'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dx_l) - 2.40}{25.04 - 2.40}  \label{eq:ddx} \\
   \Delta dy &=& \Delta dy_l + \frac{f_y'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dy_l) - 1.93}{25.04 - 1.93}, \label{eq:ddy}
@@ -194,8 +383,8 @@ specific distance adjustments:
 with $f'(\cdot) = \left(f_x'(\cdot) , f_y'(\cdot) , f_z'(\cdot) \right)^T$.
 
 These adjustment are then used for computing the actual point, with the
-interesting note that the $z$ value is computed using the $y$-specific
-distance adjustment:
+interesting note that the $z$ value is computed using the $y$-specific distance
+adjustment:
 \begin{eqnarray}
   \mathbf{p} =
   f(d, \theta, l) &=& \left(
@@ -208,31 +397,20 @@ distance adjustment:
   \label{eq:p}
 \end{eqnarray}
 
-Apart from some rescaling that is left out, we also emitted some offset
-from the process called ``pos'' in the User's Manual, which is not
-explained further. This needs further investigation.
+Again, apart from some rescaling that is left out, we here emitted an offset
+from the process called ``pos'' in the User's Manual, which is not explained
+further. This needs further investigation.
 
-% Note, that the number of bytes used by the device to transmit its
-% measurements is kept low. The storage of the (uncompressed) millimeter
-% accurate point clouds is about 2 times larger than the format used by
-% the sensor. 17+17+11+7 bit vs 16+8
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Appendix B - Reverting the more difficult preprocessing}
+\label{app:manualrevert}
 
-\section{Reversing the preprocessing}
-The aim is to reverse Equation~(\ref{eq:p}), getting back the distance
-measurement $d$, the rotational position of the device $\theta$ and the
-laser id $l$ given a point $p$.
-
-The laser id can perhaps be computed by determining the vertical
-direction of the point and matching it with the fixed $\phi_l$'s of each
-laser. However, it is easier to use the order of the points in the KITTI
-point clouds, which group the point per laser starting with the most
-upward pointing laser. This approach is straightforward and described nicely
-in~\cite{triess2020}. The order of the vertical angles $\phi_l$ described in calibration
-can now be used to determine the laser id for each point.
-
-Getting the other parameters is not that easy. We solve it in
-an iterative fashion. First, an approximate value of both the distance and
-the rotation is computed as initial values:
+Reverting the more complicated preprocessing described in
+Appendix~\ref{app:manualprepro} is not that straightforward. Getting the laser
+ID $l$ can be done as in Section~\ref{sec:reverse}, but getting the other
+parameters requires an iterative method. First, an approximate value of both the
+distance and the rotation is computed as initial values:
 \begin{eqnarray}
   \theta &=& \atantwo(\mathbf{p}_x, \mathbf{p}_y) + \theta_l, \\
   d &=& ||p|| - \Delta d.
@@ -266,187 +444,17 @@ Or, to increase numerical accuracy, if $p_y > p_x$:
 %\end{equation}
 
 The parameters $d$ and $\theta$ are refined using these equations until they
-converge. This usually takes only 2 or 3 steps. In our implementation therefor
+converge. This usually takes only 2 or 3 steps. Our implementation therefore
 used a fixed number of 10 iterations (following well established decimal
 tradition).
 
-Note, that we also tried to formulate a closed form inverse of
-Equation~(\ref{eq:p}). However, the solutions we found were not
-numerically stable and given the limited accuracy of the point clouds
-(millimeter accurate) the iterative approach seems more feasible.
+Note, that we also formulated a closed form inverse of Equation~(\ref{eq:p}).
+However, the solutions we found were not numerically stable and given the
+limited accuracy of the point clouds (millimeter accurate) the iterative
+approach is more feasible.
 
-\section{Results}
-To assess if the reverse method described in the previous section works
-correctly, we apply it on some of the KITTI data.
-
-We first apply the algorithm on an arbitrary KITTI scan (see Figure~\ref{fig:example} to get the raw measurements and then
-apply the standard preprocessing algorithm, as described in
-Section~\ref{sec:preproc} to reconstruct back the 3D points. In theory these
-reconstructed points should be the same as in the original scan. In practice, of
-course, there is the quantification error, while the KITTI point clouds are
-stored in millimeter precision.
-
-\begin{figure}
-  \begin{center}
-    \subfigure[][LiDAR point cloud]
-      {
-       \includegraphics[width=.5\textwidth]{pointcloud.png}
-      }
-    \subfigure[][Image still]
-      {
-       \includegraphics[width=.4\textwidth]{image.jpg}
-      }
-      \caption{Example scan used in the results. This is scan number 71 and an
-      image still from the raw dataset \texttt{2011\_09\_26\_drive\_0002}.}
-  \label{fig:example}
-  \end{center}
-\end{figure}
-
-The mean distance between the original 3D point and the reconstructed point for
-the scan is 3.29 mm. In Figure~\ref{fig:norms_error}, this is split over the
-different lasers sorted by vertical angle. It can be seen that lasers pointing
-down have an average error up to 14 mm. This is much larger than expected given
-the millimeter precision of the original points. This could also be related with
-the distance of the points in the scene (the distance is on average smaller for
-lasers pointing down).
-
-\begin{figure}
-    \centering
-    %\input{directions.pdf_tex}
-    \def\svgwidth{\columnwidth}
-    \scalebox{0.9}{
-    \def\svgwidth{.6 \columnwidth}
-      \input{norms_error.pdf_tex}
-    }
-    \caption{Mean 3D distance between the original point and reconstructed point
-    for each laser.}
-		\label{fig:norms_error}
-\end{figure}
-
-The angle of the point in the horizontal plane of the sensor is the same for the
-original and the reconstructed point. It is interesting to see that there is no
-error here. It seems thus that the main error is in the vertical direction.  The
-mean error of the distance of the point to the sensor is .85 mm.
-
-% position alignment
-Let us now look at the computed device rotational position per point.
-Figure~\ref{subfig:raw_meas_measured} shows them for some of the points of the
-used scan. As can be seen the computed rotation almost aligns for each of the
-lasers. Still, there is a jitter visible up to 2 mrad. We do expect some
-difference between the position of each point, due to the slightly different
-timing of each laser, but this should be very regular and much smaller. In
-Figure~\ref{subfig:raw_meas_simul} we simulated the expected rotations.
-
-\section{Conclusion}
-By reversing the Velodyne preprocessing, we can obtain the original measured
-depth and rotational position. However, there still seems to be something wrong.
-The cause is still unknown. It might be an error in the method, an error in the
-calibration file, the emitted offset ``pos'', or a combination of these. Or, of
-course, it could be just a silly bug...
-
-%\begin{figure}
-%    \centering
-%    %\input{directions.pdf_tex}
-%    \def\svgwidth{\columnwidth}
-%    \scalebox{0.9}{
-%    \def\svgwidth{.6 \columnwidth}
-%      \input{raw_meas.pdf_tex}
-%    }
-%    \caption{Comparison of the rotational position measurements between the
-%    different lasers as determined by reverse method for each point.
-%    Lasers are ordered here by there ID (not by the vertical angle). The figure
-%    only shows a limited range of 0 to 0.05 radians.}
-%		\label{fig:raw_meas}
-%\end{figure}
-
-\begin{figure}
-  \begin{center}
-    \subfigure[][measured]
-      {
-        \def\svgwidth{\columnwidth}
-        \scalebox{0.9}{
-        \def\svgwidth{.5 \columnwidth}
-          \input{raw_meas.pdf_tex}
-        }
-        \label{subfig:raw_meas_measured}
-      }
-    \subfigure[][expected]
-      {
-        \def\svgwidth{\columnwidth}
-        \scalebox{0.9}{
-        \def\svgwidth{.5 \columnwidth}
-          \input{raw_meas_simul.pdf_tex}
-        }
-        \label{subfig:raw_meas_simul}
-      }
-    \caption{Rotational position of the device for the measured points of the
-    different lasers.
-    Lasers are ordered here by their ID (not by the vertical angle). The figures
-    only show part of the scan in the range of 0 to 0.05 radians.
-    \subref{subfig:raw_meas_measured} The computed rotations from the point
-    cloud using the reverse method for each point.
-    \subref{subfig:raw_meas_simul} The expected pattern of the rotations
-    given the specs of the device.}
-		\label{fig:raw_meas}
-  \end{center}
-\end{figure}
-
-\appendix
-
-\section*{Appendix A - Preprocessing according to the manual}
-\label{app:manualalg}
-
-The function to compute the 3D point $\mathbf{p}$, given a distance measurement $d$,
-the rotational position $\theta$ and the laser id $l$ is close to
-the formula:
-\begin{eqnarray}
-  \mathbf{p'} =
-  f'(d, \theta, l, \Delta d) &=& \left(
-           \begin{array}{l}
-             (d + \Delta d) * \cos{\phi_l} * \sin(\theta - \Delta \theta_l) - h_l \cos(\theta - \Delta \theta_l) \\
-             (d + \Delta d) * \cos{\phi_l} * \cos(\theta - \Delta \theta_l) + h_l \sin(\theta - \Delta \theta_l) \\
-             (d + \Delta d) * \sin{\phi_l} + v_l
-           \end{array}
-         \right),
-  \label{eq:ptilde}
-\end{eqnarray}
-in which the variables with subscript $l$ are the calibration parameters
-specific to laser $l$ relative to the device. The values $\theta_l$ and
-$\phi_l$ are the horizontal and vertical direction, named vertCorrection
-and rotCorrection. The values $h_l$ and $b_l$ are the horizontal and
-vertical position, named horizOffsetCorrection and vertOffsetCorrection.
-
-It is close, but not complete. There is actually a non-symmetric adjustment
-for the $x$ and $y$ component. They are based on parameters $\Delta
-d_l$, $\Delta dx_l$ and $\Delta dy_l$, named distCorrection,
-distCorrectionX and distCorrectionY, which are obtained using a factory
-calibration procedure with objects placed at specific positions from the
-sensor.  These parameters are used as follows to get $x$ and $y$
-specific distance adjustments:
-\begin{eqnarray}
-  \Delta dx &=& \Delta dx_l + \frac{f_x'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dx_l) - 2.40}{25.04 - 2.40}  \label{eq:ddx} \\
-  \Delta dy &=& \Delta dy_l + \frac{f_y'(d, \theta, l, \Delta d_l)(\Delta d_l - \Delta dy_l) - 1.93}{25.04 - 1.93}, \label{eq:ddy}
-\end{eqnarray}
-with $f'(\cdot) = \left(f_x'(\cdot) , f_y'(\cdot) , f_z'(\cdot) \right)^T$.
-
-These adjustment are then used for computing the actual point, with the
-interesting note that the $z$ value is computed using the $y$-specific
-distance adjustment:
-\begin{eqnarray}
-  \mathbf{p} =
-  f(d, \theta, l) &=& \left(
-           \begin{array}{l}
-              f_x'(d, \theta, l, \Delta dx) \\
-              f_y'(d, \theta, l, \Delta dy) \\
-              f_z'(d, \theta, l, \Delta dy)
-           \end{array}
-         \right).
-  \label{eq:p}
-\end{eqnarray}
-
-Apart from some rescaling that is left out, we also emitted some offset
-from the process called ``pos'' in the User's Manual, which is not
-explained further. This needs further investigation.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \bibliographystyle{apalike}
 \bibliography{ittik.bib}
