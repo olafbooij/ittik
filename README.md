@@ -4,10 +4,12 @@ ITTIK (I jusT wanT my kittI bacK) is an attempt to get back the original dense V
 
 This dense data might be useful as input to convolutional neural networks for object detection, semantic segmentation, etc. It could also be useful for geometric processing such as SLAM, because it allows for more accurate timing, and lidar-ray projections.
 
-However... something is still not correct, as can be seen in the following figure. The marks indicate the orientational positions of each ray for the the 64 probes. These positions should be aligned (well, slightly offset pairwise in a regular pattern), but they have an error of up to ~7 milliradians.
+The following figure shows the current status. On the left is the projection of a small piece of a raw KITTI point cloud and on the right that same piece after the calibration was reverted:
 
-<img src="./aligned...almost.png">
+<img src="./front.png">
 
-It is clear though, that from this regularized data we can easily get a dense image of the velodyne data by performing some post-processing (future work...).
+It is clear that the left is easier to descritize and use in a standard convolutional network.
 
-The code is not that readable (sorry...) and uses some c++20 features; I used GCC 8.3.0 with `-std=c++2a`.
+Next up is reverting the motion correction used in most of the KITTI benchmarks.
+
+The code is not that readable (sorry...) and uses some c++20 features (I used GCC 8.3.0 with `-std=c++2a`).
