@@ -8,7 +8,7 @@ The following figure shows the current status. On the left is the projection of 
 
 <img src="./front.png">
 
-It is clear that the left is easier to descritize and use in a standard convolutional network.
+It is clear that the left is easier to discretize and use in a standard convolutional network.
 
 Next up is reverting the motion correction used in most of the KITTI benchmarks.
 
