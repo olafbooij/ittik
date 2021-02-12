@@ -1,0 +1,5 @@
+cd src
+  g++ -std=c++2a determine_probe_order.cpp     -o ../bin/determine_probe_order
+  g++ -std=c++2a plot_unapply_error.cpp        -o ../bin/plot_unapply_error
+  g++ -std=c++2a test_unapply_calibration.cpp  -o ../bin/test_unapply_calibration
+  g++ -std=c++2a unapply_calibration_sweep.cpp -o ../bin/unapply_calibration_sweep
