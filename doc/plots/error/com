@@ -1,7 +1,7 @@
-../../../plot_unapply_error ../../../tmp/0000000071.txt norms_error
-../../../unapply_calibration_sweep ../../../tmp/0000000071.txt raw_meas
+../../../bin/plot_unapply_error ../../../kitti/2011_09_26/2011_09_26_drive_0002_extract/velodyne_points/data/0000000071.txt tmp/norms_error
+../../../bin/unapply_calibration_sweep ../../../kitti/2011_09_26/2011_09_26_drive_0002_extract/velodyne_points/data/0000000071.txt tmp/raw_meas
 gnuplot norms_error.gp
 gnuplot raw_meas.gp
-inkscape -D -z --file=norms_error.svg --export-pdf=norms_error.pdf --export-latex
-inkscape -D -z --file=raw_meas.svg --export-pdf=raw_meas.pdf --export-latex
-mv *.pdf* ../../
+inkscape -D -z --file=tmp/norms_error.svg --export-pdf=norms_error.pdf --export-latex
+inkscape -D -z --file=tmp/raw_meas.svg --export-pdf=raw_meas.pdf --export-latex
+mv *.pdf* ../../im

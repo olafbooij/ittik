@@ -1,3 +1,3 @@
 gnuplot directions.gp 
-inkscape -D -z --file=directions.svg --export-pdf=directions.pdf --export-latex
+inkscape -D -z --file=tmp/directions.svg --export-pdf=directions.pdf --export-latex
 mv directions.pdf* ../../

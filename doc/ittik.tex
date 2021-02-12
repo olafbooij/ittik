@@ -13,7 +13,7 @@
 \usepackage{algorithmic}
 \usepackage{amssymb}
 \usepackage{amsmath}
-\graphicspath{{./images/}}
+\graphicspath{{./im/}}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\atantwo}{atan2}
 \newcommand{\frametrans}[3]{{}_{#1}{#3}^{#2}}
@@ -77,11 +77,11 @@ rays are shown. As can be seen the vertical view-angle is approximately
 
 \begin{figure}
     \centering
-    %\input{directions.pdf_tex}
+    %\input{im/directions.pdf_tex}
     \def\svgwidth{\columnwidth}
     \scalebox{0.9}{
     \def\svgwidth{.6 \columnwidth}
-      \input{directions.pdf_tex}
+      \input{im/directions.pdf_tex}
     }
     \caption{Direction of each laser, plotted with there index, as
     indicated in the calibration file in degrees.}
@@ -257,11 +257,10 @@ lasers pointing down).
 
 \begin{figure}
     \centering
-    %\input{directions.pdf_tex}
     \def\svgwidth{\columnwidth}
     \scalebox{0.9}{
     \def\svgwidth{.6 \columnwidth}
-      \input{norms_error.pdf_tex}
+      \input{im/norms_error.pdf_tex}
     }
     \caption{Mean 3D distance between the original point and reconstructed point
     for each laser.}
@@ -320,7 +319,7 @@ were not used.
         \def\svgwidth{\columnwidth}
         \scalebox{0.9}{
         \def\svgwidth{.5 \columnwidth}
-          \input{raw_meas.pdf_tex}
+          \input{im/raw_meas.pdf_tex}
         }
         \label{subfig:raw_meas_measured}
       }

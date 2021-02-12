@@ -1,4 +1,4 @@
 gnuplot 71_pointcloud.gp
-mv pointcloud.png ../../
+mv pointcloud.png ../../im/
 convert ../../../kitti/2011_09_26/2011_09_26_drive_0002_extract/image_02/data/0000000069.png -geometry 50% image.jpg
-mv image.jpg ../../
+mv image.jpg ../../im/

@@ -104,4 +104,23 @@ But the manual says .73 microsecond between each fire
 in which the device rotated 2pi*10 /s * .73 microsec = 45.9 microrad
 Clear that there some measurements dropped, as also visible in the measurements themselves
 
+-------------------
+On to reverting the motion correction.
+Let me check for which of the Odometry datasets the raw data is available
+00: 2011_10_03_drive_0027 000000 004540 -> residential
+01: 2011_10_03_drive_0042 000000 001100 -> road (highway)
+02: 2011_10_03_drive_0034 000000 004660 -> residential
+03: 2011_09_26_drive_0067 000000 000800 -> nope
+04: 2011_09_30_drive_0016 000000 000270 -> road (only 1.1GB, but very straight)
+05: 2011_09_30_drive_0018 000000 002760 -> residential
+06: 2011_09_30_drive_0020 000000 001100 -> residential
+07: 2011_09_30_drive_0027 000000 001100 -> residential
+08: 2011_09_30_drive_0028 001100 005170 -> residential
+09: 2011_09_30_drive_0033 000000 001590 -> residential
+10: 2011_09_30_drive_0034 000000 001200 -> residential
+
+Only for 03 the raw data is missing. This are, I assume, only the train sets
+and not the 11 test sets. The Odometry data can only be downloaded as a whole.
+Let om try 04...
+
 
