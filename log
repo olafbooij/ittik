@@ -123,3 +123,7 @@ Only for 03 the raw data is missing. This are, I assume, only the train sets
 and not the 11 test sets. The Odometry data can only be downloaded as a whole.
 Let om try 04...
 Seems the offset of the sweeps is off by 3. That is: the first 3 sweeps are missing.
+Quite some overlap of projected points in the motion corrected data, let me try to color with the semantic labels:
+rgb(r,g,b) = int(r)*65536 + int(g)*256 + int(b)
+ plot "<(paste -d' ' tmp/000000_from*)" using (atan2($2,$1)):(atan($3/sqrt($1**2+$2**2))):(rgb($5,$6,$7)) pt 7 lc rgb variable
+
