@@ -122,5 +122,4 @@ Let me check for which of the Odometry datasets the raw data is available
 Only for 03 the raw data is missing. This are, I assume, only the train sets
 and not the 11 test sets. The Odometry data can only be downloaded as a whole.
 Let om try 04...
-
-
+Seems the offset of the sweeps is off by 3. That is: the first 3 sweeps are missing.
