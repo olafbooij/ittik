@@ -119,11 +119,17 @@ Let me check for which of the Odometry datasets the raw data is available
 09: 2011_09_30_drive_0033 000000 001590 -> residential
 10: 2011_09_30_drive_0034 000000 001200 -> residential
 
-Only for 03 the raw data is missing. This are, I assume, only the train sets
-and not the 11 test sets. The Odometry data can only be downloaded as a whole.
+Only for 03 the raw data is missing. These are only the train sets and not the
+11 test sets. The Odometry data can only be downloaded as a whole.
 Let om try 04...
 Seems the offset of the sweeps is off by 3. That is: the first 3 sweeps are missing.
 Quite some overlap of projected points in the motion corrected data, let me try to color with the semantic labels:
 rgb(r,g,b) = int(r)*65536 + int(g)*256 + int(b)
  plot "<(paste -d' ' tmp/000000_from*)" using (atan2($2,$1)):(atan($3/sqrt($1**2+$2**2))):(rgb($5,$6,$7)) pt 7 lc rgb variable
+would be good to project to pixels like done in other works, and count the number of overlapping conflicting labels.
+
+Perhaps I should just not try to undo the egomotion, but just use the raw datasets instead. Let's try to find out the test-set.
+Download all raw data.... ~100 GB, 2MB/s -> 50K s = 14h (space for 150 GB on disc) ... turned out to be 244G
+odometry data: ll bin / 16 -> nr of points
+grrr, some hacky grepping revealed that none of the test-sets, except for 20 (from 2011_10_03_drive_0047), is in the raw sets.
 
