@@ -143,8 +143,8 @@ plot path using:
 plot "<(cat ../kitti/2011_09_30/2011_09_30_drive_0016_extract/oxts/data/*)"
 scan with no movement: 2011_09_30/2011_09_30_drive_0018_extract/velodyne_points/data/0000002363.txt
 -> no movement, approx the same point, so reference frame is the laser at a certain time.
-100 ms -> 3m. 
-Grrr there's strange jumps in the oxts data, such as in 2011_09_30_drive_0018_extract measurement 5663 - 5664. It seems there was some data cut out, but the timestamps do not have this gap. Pffff. I wonder how the lidar measurement looks at that place....
+100 ms -> 3m.
+Grrr there's strange jumps in the oxts data, such as in 2011_09_30_drive_0018_extract measurement 5663 - 5664. It seems there was some data cut out, but the timestamps do not have this gap. Pffff. I wonder how the lidar measurement looks at that place.... ... hmmm perhaps it is just the imu-filter acting crazy, there are a lot of different strange artifacts.
 
 
 
