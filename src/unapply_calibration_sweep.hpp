@@ -38,7 +38,7 @@ struct SweepUncalibrator
       double horizontalAngle = atan2(point(1), point(0));
       if(horizontalAngle < 0)
         horizontalAngle += 2 * M_PI;
-      if(horizontalAngle < horizontalAnglePrev_)
+      if(horizontalAngle + M_PI < horizontalAnglePrev_)  // the + M_PI is just for rebustness needed for motion corrected data
         ++vertId_;
       horizontalAnglePrev_ = horizontalAngle;
     }

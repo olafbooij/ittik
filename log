@@ -133,3 +133,17 @@ Download all raw data.... ~100 GB, 2MB/s -> 50K s = 14h (space for 150 GB on dis
 odometry data: ll bin / 16 -> nr of points
 grrr, some hacky grepping revealed that none of the test-sets, except for 20 (from 2011_10_03_drive_0047), is in the raw sets.
 
+Hmmm, interesting btw: the odometry datasets are stored with higher .1mm accuracy.
+
+Let's now try to revert the motion-correction. First just try not taking it into account and work backwards in time. Plus check that the reference frame is still the same, or that also changed. That last thing can be checked by first using a scan when the car was not moving, which should result in approx the same points.
+Motion seems to be referenced at pi/2. But it is not exactly on the mark. Up to 1mrad error. Especially for the upper lasers. Perhaps reference is pitch-roll = 0, which would have a bigger inpact for upper lasers.
+Now try to compute poses relative to pi/2 one and readjust points before unapplying the calibration. Perhaps first the pitch/roll.
+... And first double check the .bin points of the raw sets. -> yes they are
+plot path using:
+plot "<(cat ../kitti/2011_09_30/2011_09_30_drive_0016_extract/oxts/data/*)"
+scan with no movement: 2011_09_30/2011_09_30_drive_0018_extract/velodyne_points/data/0000002363.txt
+-> no movement, approx the same point, so reference frame is the laser at a certain time.
+
+
+
+
