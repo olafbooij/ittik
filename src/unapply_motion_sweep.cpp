@@ -6,7 +6,7 @@
 #include<Eigen/Geometry>
 #include"util.hpp"
 
-//#include<unapply_calibration_sweep.hpp>
+#include<unapply_calibration_sweep.hpp>
 
 auto read_times(const std::string filename)
 {
@@ -58,6 +58,7 @@ auto read_imu_velo_calib(const std::string base_path)
 
   file >> ignore; // T:
   file >> m(12) >> m(13) >> m(14);
+  assert(file.good());
 
   return cal;
 }
@@ -100,7 +101,7 @@ int main(int argc, char* argv[])
 {
   using namespace std;
   //ifstream sweepFile(argv[1]);
-  //ofstream outFile(argv[4]);
+  ofstream outFile(argv[4]);
 
   // let's do it hacky:
   // read pose and timing data (oxts + lidar time)
@@ -114,31 +115,41 @@ int main(int argc, char* argv[])
   auto velo_time = read_velo_times(data_path);
   auto pose_time = read_pose_times(data_path);
   auto poses = read_poses(data_path, pose_time);
-  std::vector<Pose> rel_poses;
+  //std::vector<Pose> rel_poses;
   auto zero_pose = poses.front().pose;
-  for(auto [time, pose]: poses)
-    rel_poses.emplace_back(zero_pose.inverse() * pose);
+  for(auto& [time, pose]: poses)
+    //rel_poses.emplace_back(zero_pose.inverse() * pose);
+    pose = zero_pose.inverse() * pose;
 
   ifstream sweepFile("00_odo.txt");
   int sweep_id = 3; // = 0 in odmetry
   auto sweep_time = velo_time.at(sweep_id);
 
-  auto delta = .75;
-  auto sweep_ref_time = (1 - delta) * sweep_time.start + delta * sweep_time.end;
-  // ... I should interpolate
-  auto world_p_imu = std::lower_bound(poses.begin(), poses.end(), time, [](auto pose, auto time){return pose.time < time;})->pose;
+  auto interpolate_pose = [](auto poses, auto sweep_time, auto delta)
+  {
+    auto scan_time = (1 - delta) * sweep_time.start + delta * sweep_time.end;
+    // taking nearest neighbour... I should interpolate
+    return std::lower_bound(poses.begin(), poses.end(), scan_time, [](auto pose, auto time){return pose.time < time;})->pose;
+  };
+  auto world_p_imu_ref = interpolate_pose(poses, sweep_time, .75);
+  auto world_p_lidar_ref = world_p_imu_ref * imu_p_lidar;
 
-  Eigen::Vector3d point;
+  SweepUncalibrator sweepUncalibrator_orig;
+  SweepUncalibrator sweepUncalibrator_unmo;
+  Eigen::Vector3d point_ref;
   double refl;
-  while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
+  while(sweepFile >> point_ref(0) >> point_ref(1) >> point_ref(2) >> refl)
   {
     // correct point ... get lidar position
-    auto hori_angle = atan2(velo.p(1), velo.p(0));
-    auto delta = hori_angle / (2 * M_PI);
-    auto time = (1 - delta) * sweep_time.start + delta * sweep_time.end;
-    auto world_p_imu = std::lower_bound(poses.begin(), poses.end(), time, [](auto pose, auto time){return pose.time < time;})->pose;
+    auto [probeId_r, position_r, distanceUncor_r, vertId__r] = sweepUncalibrator_orig(point_ref);
+    auto delta = (position_r + M_PI) / (2 * M_PI);
+    auto world_p_imu = interpolate_pose(poses, sweep_time, delta);
 
-    auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
+    //auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
+    //outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << std::endl;
+    auto lidar_p_lidar_ref = (world_p_imu * imu_p_lidar).inverse() * world_p_lidar_ref;
+    Eigen::Vector3d point = lidar_p_lidar_ref * point_ref;
+    auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator_unmo(point);
     outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << std::endl;
   }
 
