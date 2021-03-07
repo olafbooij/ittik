@@ -1,0 +1,3 @@
+[submodule "src/liespline"]
+	path = src/liespline
+	url = https://github.com/olafbooij/liespline.git
