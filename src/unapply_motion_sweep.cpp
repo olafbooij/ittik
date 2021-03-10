@@ -39,6 +39,11 @@ int main(int argc, char* argv[])
     for(auto& [time, pose]: poses)
       liespline::plot_se3(pose, file, .05);
   }
+  {
+    std::ofstream file("oxts.positions");
+    for(auto& [time, pose]: poses)
+      file << pose.translation().transpose() << " " << time - poses.front().time << std::endl;
+  }
 
   // I'm going to assume that oxts timing is constant at 10 ms. Let's check that this is the case
   {
@@ -55,20 +60,22 @@ int main(int argc, char* argv[])
   auto sweep_time = velo_time.at(sweep_id);
 
   std::ofstream file("interpolated.poses");
-  auto interpolate_pose = [&file](auto poses, auto sweep_time, auto delta)
+  std::ofstream filep("interpolated.positions");
+  auto interpolate_pose = [&file, &filep](auto poses, auto sweep_time, auto delta)
   {
     auto scan_time = (1 - delta) * sweep_time.start + delta * sweep_time.end;
     auto closestPose = std::lower_bound(poses.begin(), poses.end(), scan_time, [](auto pose, auto time){return pose.time < time;}) - 1;
-    assert(closestPose - poses.begin() > 2);
-    assert(poses.end() -  closestPose > 1);
+    assert(closestPose - poses.begin() > 0);
+    assert(poses.end() -  closestPose > 3);
     // let me split poses for now
     std::vector<Pose> justPoses;
     for(auto [time, pose]: poses)
       justPoses.emplace_back(pose);
     auto closestJustPose = justPoses.begin() + (closestPose - poses.begin());
-    auto interpolatedPose = liespline::interpolate<liespline::se3>(closestJustPose - 2, (scan_time - closestPose->time) / ((closestPose + 1)->time - closestPose->time));
+    auto interpolatedPose = liespline::interpolate<liespline::se3>(closestJustPose - 1, (scan_time - closestPose->time) / ((closestPose + 1)->time - closestPose->time));
     //return closestPose->pose;
     liespline::plot_se3(interpolatedPose, file, .05);
+    filep << interpolatedPose.translation().transpose() << " " << scan_time - poses.front().time << std::endl;
     return interpolatedPose;
   };
   auto world_p_imu_ref = interpolate_pose(poses, sweep_time, .75);
