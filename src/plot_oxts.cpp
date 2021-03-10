@@ -7,6 +7,11 @@ int main(/*int argc, char* argv[]*/)
   std::string data_path("kitti/2011_09_302011_09_30_drive_0016_extract/");
   auto pose_time = read_pose_times(data_path);
   auto poses = read_poses(data_path, pose_time);
+  {
+    Pose origin = poses.front().pose.inverse();
+    for(auto& [time, pose]: poses)
+      pose = origin * pose;
+  }
   std::ofstream file("oxts.poses");
   for(auto& [time, pose]: poses)
     liespline::plot_se3(pose, file, .05);
