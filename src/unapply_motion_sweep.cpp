@@ -81,22 +81,25 @@ int main(int argc, char* argv[])
   auto world_p_imu_ref = interpolate_pose(poses, sweep_time, .75);
   auto world_p_lidar_ref = world_p_imu_ref * imu_p_lidar;
 
-  SweepUncalibrator sweepUncalibrator_orig;
-  SweepUncalibrator sweepUncalibrator_unmo;
+  std::array<SweepUncalibrator, 2> sweepUncalibrators;
   Eigen::Vector3d point_ref;
   double refl;
   while(sweepFile >> point_ref(0) >> point_ref(1) >> point_ref(2) >> refl)
   {
-    // correct point ... get lidar rotational position
-    auto [probeId_r, position_r, distanceUncor_r, vertId__r] = sweepUncalibrator_orig(point_ref);
-    auto delta = (position_r + M_PI) / (2 * M_PI);
-    auto world_p_imu = interpolate_pose(poses, sweep_time, delta);
+    Eigen::Vector3d point = point_ref;
+    // doing this in an iterative fashion (how hacky...), but after 2 steps it converges...
+    for(int i = sweepUncalibrators.size();--i;)
+    {
+      // correct point ... get lidar rotational position
+      auto [probeId_r, position_r, distanceUncor_r, vertId__r] = sweepUncalibrators.at(i)(point);
+      auto delta = (position_r + M_PI) / (2 * M_PI);
+      auto world_p_imu = interpolate_pose(poses, sweep_time, delta);
 
-    //auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
-    //outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << std::endl;
-    auto lidar_p_lidar_ref = (world_p_imu * imu_p_lidar).inverse() * world_p_lidar_ref;
-    Eigen::Vector3d point = lidar_p_lidar_ref * point_ref;
-    auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator_unmo(point);
+      auto lidar_p_lidar_ref = (world_p_imu * imu_p_lidar).inverse() * world_p_lidar_ref;
+      point = lidar_p_lidar_ref * point_ref;
+    }
+
+    auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrators.at(0)(point);
     outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << std::endl;
   }
 
