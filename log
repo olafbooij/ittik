@@ -148,3 +148,6 @@ Grrr there's strange jumps in the oxts data, such as in 2011_09_30_drive_0018_ex
 Let's now try my 3d spline interpolation.... (though I guess simple angle-averaging was used)
 He, seems to actually already work quite nicely, even with the rough scan_time approximation. Pattern is visible. Not directly usable thought.
 using the estimated heading again for a time estimate makes it even work better.
+
+Moving to pose estimation
+should check vertical angle in the raw data
