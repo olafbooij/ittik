@@ -151,3 +151,6 @@ using the estimated heading again for a time estimate makes it even work better.
 
 Moving to pose estimation
 should check vertical angle in the raw data
+Wow, the rotational position of the different sweeps are very much the same...
+Hmmmm.... when I paste sweep 01 after sweep 00 then they do not seem to fit, they have different different timing -> that's because how I unapply calibration...
+
