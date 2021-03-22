@@ -40,14 +40,13 @@ struct SweepUncalibrator
     if(horizontalAngle + M_PI < horizontalAnglePrev_)  // the + M_PI is just for rebustness needed for motion corrected data
       ++vertId_;
     horizontalAnglePrev_ = horizontalAngle;
-    return  probeOrder_.at(vertId_);
+    return probeOrder_.at(vertId_);
   }
 
   auto operator()(const Eigen::Vector3d& point)
   {
     auto probeId = read(point);
     auto [position, distanceUncor] = unapply_calibration(point, kitti_probe_calibration().at(probeId));
-    vertId_ = 0; // TODO
     return std::make_tuple(probeId, position, distanceUncor, vertId_);
   }
 };

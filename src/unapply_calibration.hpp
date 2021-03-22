@@ -15,3 +15,14 @@ auto unapply_calibration(const Eigen::Vector3d point, const ProbeCalibration& ca
   return std::pair{position, distanceUncor};
 }
 
+auto unapply_calibration_unknown_laser(const Eigen::Vector3d point, const Calibration& cals)
+{
+  auto distXYSquared = point(0) * point(0) + point(1) * point(1);
+  auto vertCorrection = atan((point(2) - cal.vertOffsetCorrection) / sqrt(distXYSquared));
+  // pick closest calibration
+  auto cal = std::min_element(cals.begin(), cals.end(), [&vertCorrection](auto calA, auto calB){
+    return fabs(calA.vertCorrection - vertCorrection) < fabs(calB.vertCorrection - vertCorrection);});
+  auto distanceUncor = sqrt(distXYSquared - cal.horizOffsetCorrection * cal.horizOffsetCorrection) / cos(cal.vertCorrection) - cal.distCorrection;
+  auto position = atan2(point(0), point(1)) + atan2(cal.horizOffsetCorrection, sqrt(distXYSquared)) + cal.rotCorrection;
+  return std::pair{position, distanceUncor};
+}
