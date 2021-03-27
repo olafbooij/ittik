@@ -50,3 +50,46 @@ struct SweepUncalibrator
     return std::make_tuple(probeId, position, distanceUncor, vertId_);
   }
 };
+
+
+struct SweepUncalibrator_proper_horizontal_angle
+{
+  int vertId_;
+  int probeIdPrev_;
+  double horizontalAnglePrev_;
+  double positionPrev_;
+  std::array<std::size_t, 64> probeOrder_;
+  SweepUncalibrator() :
+    vertId_(0),
+    probeIdPrev_(0),
+    horizontalAnglePrev_(0),
+    positionPrev_(0),
+    probeOrder_(determine_probe_order(kitti_probe_calibration()))
+  {}
+
+  auto read(const Eigen::Vector3d& point)
+  {
+    double horizontalAngle = atan2(point(1), point(0));
+    if(horizontalAngle < 0)
+      horizontalAngle += 2 * M_PI;
+    if(horizontalAngle + M_PI < horizontalAnglePrev_)  // the + M_PI is just for rebustness needed for motion corrected data
+      ++vertId_;
+    horizontalAnglePrev_ = horizontalAngle;
+    return probeOrder_.at(vertId_);
+  }
+
+  auto operator()(const Eigen::Vector3d& point)
+  {
+    //auto probeId = read(point);
+    //auto [position, distanceUncor] = unapply_calibration(point, kitti_probe_calibration().at(probeId));
+    auto [position, distanceUncor, probeId] = unapply_calibration_unknown_laser(point, kitti_probe_calibration());
+    if(probeId == probeIdPrev_)
+      if(position > positionPrev_ + 1)
+        position -= 2 * M_PI;
+    probeIdPrev_ = probeId;
+    positionPrev_ = position;
+    return std::make_tuple(probeId, position, distanceUncor, vertId_);
+  }
+};
+
+
