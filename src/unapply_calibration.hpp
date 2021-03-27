@@ -11,7 +11,7 @@ auto unapply_calibration(const Eigen::Vector3d point, const ProbeCalibration& ca
 {
   auto distXYSquared = point(0) * point(0) + point(1) * point(1);
   auto distanceUncor = sqrt(distXYSquared - cal.horizOffsetCorrection * cal.horizOffsetCorrection) / cos(cal.vertCorrection) - cal.distCorrection;
-  auto position = atan2(point(0), point(1)) + atan2(cal.horizOffsetCorrection, sqrt(distXYSquared)) + cal.rotCorrection;
+  auto position = atan2(point(1), point(0)) - atan2(cal.horizOffsetCorrection, sqrt(distXYSquared)) - cal.rotCorrection;
   return std::pair{position, distanceUncor};
 }
 

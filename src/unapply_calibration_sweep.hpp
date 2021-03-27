@@ -59,7 +59,7 @@ struct SweepUncalibrator_proper_horizontal_angle
   double horizontalAnglePrev_;
   double positionPrev_;
   std::array<std::size_t, 64> probeOrder_;
-  SweepUncalibrator() :
+  SweepUncalibrator_proper_horizontal_angle() :
     vertId_(0),
     probeIdPrev_(0),
     horizontalAnglePrev_(0),
