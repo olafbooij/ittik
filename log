@@ -153,4 +153,26 @@ Moving to pose estimation
 should check vertical angle in the raw data -> pretty good, < 2 mrad error; well some are 6 mrad, while the difference between 2 lasers is sometimes also 6 mrad... so just not good enough to estimate probeId...
 well... perhaps those are strange outliers anyways.... should check that...
 Wow, the rotational position of the different sweeps are very much the same...
-Hmmmm.... when I paste sweep 01 after sweep 00 then they do not seem to fit, they have different different timing -> that's because how I unapply calibration...
+Hmmmm.... when I paste sweep 01 after sweep 00 then they do not seem to fit, they have different different timing 
+-> that's because how I unapply calibration...
+-> no... also the original split does seem to fit. ...let me find the place where it's actually split. Or are sweeps missing... 
+Let me get a motion-corrected sweep when the car is rotating, e.g. from odo-set 05: 2011_09_30_drive_0018, scan 794 or 1810
+-> the seem is at pi... so that would be where it should "fit" with the next sweep. I should try this with 1810 where it is clear where it starts and stops
+what seems to me to be the case is that the scans are split by device-rotation at some perhaps arbitrary orientation, and then saved as "point-clouds" starting from point heading 0. -> Yas, confirmed on 1810 at -pi/2 (because of my atan screwup)
+But something is strange. The points where it wraps (at -pi/2) are not on the edges of the motion corrected one.
+Is the motion correction not taking the position of the point into account... or are it actually different points (nope, reflectivity is the same)
+If not taken into account then there should be errors at the edges of the sweep. ...how to see those...
+
+ plot "odo_05_001810.txt" using (atan2($2,$1)):(atan($3/sqrt($1**2+$2**2)))
+ replot "odo_05_001810.txt" using (-3<atan2($2,$1)?(atan2($2,$1)<3?1/0:atan2($2,$1)):atan2($2,$1)):(atan($3/sqrt($1**2+$2**2))):($0) with labels
+
+ plot "raw_05_001813_unap.txt" using 2:1
+ replot "raw_05_001813_unap.txt" using ($0==108312?$2:1/0):1:0 with labels lc "blue"
+ replot "raw_05_001813_unap.txt" using ($0==106327?$2:1/0):1:0 with labels lc "blue"
+ replot "raw_05_001813_unap.txt" using ($0==102337?$2:1/0):1:0 with labels lc "blue"
+ replot "raw_05_001813_unap.txt" using ($0==100294?$2:1/0):1:0 with labels lc "blue"
+ replot "raw_05_001813_unap.txt" using ($0==98219?$2:1/0):1:0 with labels lc "blue"
+ replot "raw_05_001813_unap.txt" using ($0==96153?$2:1/0):1:0 with labels lc "blue"
+ replot "raw_05_001813_unap.txt" using ($0==94099?$2:1/0):1:0 with labels lc "blue"
+
+Assuming now that laser positions were not taken into account during motion correction. Especially behind the car this can result in big errors because points measured at the start of the sweep are ended to the end and vice versa.
