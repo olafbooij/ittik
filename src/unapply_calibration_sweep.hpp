@@ -52,6 +52,8 @@ struct SweepUncalibrator
 };
 
 
+// an attempt to get a better horizontal angle, respecting start and end
+// but I wonder if this is useful / correct ...
 struct SweepUncalibrator_proper_horizontal_angle
 {
   int vertId_;
@@ -80,8 +82,6 @@ struct SweepUncalibrator_proper_horizontal_angle
 
   auto operator()(const Eigen::Vector3d& point)
   {
-    //auto probeId = read(point);
-    //auto [position, distanceUncor] = unapply_calibration(point, kitti_probe_calibration().at(probeId));
     auto [position, distanceUncor, probeId] = unapply_calibration_unknown_laser(point, kitti_probe_calibration());
     if(probeId == probeIdPrev_)
       if(position > positionPrev_ + 1)

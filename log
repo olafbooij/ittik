@@ -178,4 +178,4 @@ If not taken into account then there should be errors at the edges of the sweep.
 Assuming now that laser positions were not taken into account during motion correction. Especially behind the car this can result in big errors because points measured at the start of the sweep are ended to the end and vice versa.
 
 Fix the rotational position angle, such that it is in line with the horizontal point angle -> fixed
-Use the correct begin and end of sweep ; check with consecutive sweeps
+Use the correct begin and end of sweep ; check with consecutive sweep -> fixed (made a script for it)
