@@ -81,26 +81,20 @@ int main(int argc, char* argv[])
   auto world_p_imu_ref = interpolate_pose(poses, sweep_time, .5);
   auto world_p_lidar_ref = world_p_imu_ref * imu_p_lidar;
 
-  std::array<SweepUncalibrator, 2> sweepUncalibrators;
-  Eigen::Vector3d point_ref;
+  SweepUncalibrator sweepUncalibrator;
+  Eigen::Vector3d point;
   double refl;
-  while(sweepFile >> point_ref(0) >> point_ref(1) >> point_ref(2) >> refl)
+  while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
   {
-    Eigen::Vector3d point = point_ref;
-    // doing this in an iterative fashion (how hacky...), but after 2 steps it converges...
-    for(int i = sweepUncalibrators.size();--i;)
-    {
-      // correct point ... get lidar rotational position
-      //auto [probeId_r, position_r, distanceUncor_r, vertId__r] = sweepUncalibrators.at(i)(point);
-      double horizontalAngle = atan2(point(1), point(0));
-      auto delta = 1 - (horizontalAngle + M_PI) / (2 * M_PI); // I do not understand this 1 - ...
-      auto world_p_imu = interpolate_pose(poses, sweep_time, delta);
+    // correct point ...
+    double horizontalAngle = atan2(point(1), point(0));
+    auto delta = 1 - (horizontalAngle + M_PI) / (2 * M_PI); // I do not understand this 1 - ...
+    auto world_p_imu = interpolate_pose(poses, sweep_time, delta);
 
-      auto lidar_p_lidar_ref = (world_p_imu * imu_p_lidar).inverse() * world_p_lidar_ref;
-      point = lidar_p_lidar_ref * point_ref;
-    }
+    auto lidar_p_lidar_ref = (world_p_imu * imu_p_lidar).inverse() * world_p_lidar_ref;
+    Eigen::Vector3d pointCorrected = lidar_p_lidar_ref * point;
 
-    auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrators.at(0)(point);
+    auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(pointCorrected);
     outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << std::endl;
   }
 
