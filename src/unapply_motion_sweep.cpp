@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     filep << interpolatedPose.translation().transpose() << " " << scan_time - poses.front().time << std::endl;
     return interpolatedPose;
   };
-  auto world_p_imu_ref = interpolate_pose(poses, sweep_time, .75);
+  auto world_p_imu_ref = interpolate_pose(poses, sweep_time, .5);
   auto world_p_lidar_ref = world_p_imu_ref * imu_p_lidar;
 
   std::array<SweepUncalibrator, 2> sweepUncalibrators;
@@ -91,8 +91,9 @@ int main(int argc, char* argv[])
     for(int i = sweepUncalibrators.size();--i;)
     {
       // correct point ... get lidar rotational position
-      auto [probeId_r, position_r, distanceUncor_r, vertId__r] = sweepUncalibrators.at(i)(point);
-      auto delta = (position_r + M_PI) / (2 * M_PI);
+      //auto [probeId_r, position_r, distanceUncor_r, vertId__r] = sweepUncalibrators.at(i)(point);
+      double horizontalAngle = atan2(point(1), point(0));
+      auto delta = 1 - (horizontalAngle + M_PI) / (2 * M_PI); // I do not understand this 1 - ...
       auto world_p_imu = interpolate_pose(poses, sweep_time, delta);
 
       auto lidar_p_lidar_ref = (world_p_imu * imu_p_lidar).inverse() * world_p_lidar_ref;
