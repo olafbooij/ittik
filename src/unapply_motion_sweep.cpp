@@ -35,11 +35,6 @@ int main(int argc, char* argv[])
   }
 
   {
-    std::ofstream file("oxts.poses");
-    for(auto& [time, pose]: poses)
-      liespline::plot_se3(pose, file, .05);
-  }
-  {
     std::ofstream file("oxts.positions");
     for(auto& [time, pose]: poses)
       file << pose.translation().transpose() << " " << time - poses.front().time << std::endl;
@@ -55,8 +50,8 @@ int main(int argc, char* argv[])
     }
   }
 
-  ifstream sweepFile("00_odo.txt");
-  int sweep_id = 3; // = 0 in odmetry
+  ifstream sweepFile("199_odo.txt");
+  int sweep_id = 202; // = 0 in odmetry
   auto sweep_time = velo_time.at(sweep_id);
 
   std::ofstream file("interpolated.poses");
