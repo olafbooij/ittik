@@ -13,7 +13,9 @@ int main(int argc, char* argv[])
 {
   using namespace std;
   using namespace ittik;
-  //ifstream sweepFile(argv[1]);
+  std::string sweepFileName(argv[1]);
+  std::string raw_data_path(argv[2]);
+  int sweep_id(atoi(argv[3]));
   ofstream outFile(argv[4]);
 
   // let's do it hacky:
@@ -22,7 +24,6 @@ int main(int argc, char* argv[])
   // (first just assumed 2pi, later determine the heading-change using pose-date)
   // linearly interpolate pose and unapply
 
-  std::string data_path("../kitti/2011_09_30/2011_09_30_drive_0016_extract/");
   auto imu_p_lidar = read_imu_velo_calib(data_path + "../");
   auto velo_time = read_velo_times(data_path);
   auto pose_time = read_pose_times(data_path);
@@ -50,8 +51,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  ifstream sweepFile("199_odo.txt");
-  int sweep_id = 202; // = 0 in odmetry
+  ifstream sweepFile(sweepFileName);
   auto sweep_time = velo_time.at(sweep_id);
 
   std::ofstream file("interpolated.poses");

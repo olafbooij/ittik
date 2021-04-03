@@ -113,7 +113,7 @@ Let me check for which of the Odometry datasets the raw data is available
 01: 2011_10_03_drive_0042 000000 001100 -> road (highway)
 02: 2011_10_03_drive_0034 000000 004660 -> residential
 03: 2011_09_26_drive_0067 000000 000800 -> nope
-04: 2011_09_30_drive_0016 000000 000270 -> road (only 1.1GB, but very straight)
+04: 2011_09_30_drive_0016 000000 000270 -> road (only 1.1GB, but very straight) +3
 05: 2011_09_30_drive_0018 000000 002760 -> residential
 06: 2011_09_30_drive_0020 000000 001100 -> residential
 07: 2011_09_30_drive_0027 000000 001100 -> residential
