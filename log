@@ -182,6 +182,8 @@ Assuming now that laser positions were not taken into account during motion corr
 Fix the rotational position angle, such that it is in line with the horizontal point angle -> fixed
 Use the correct begin and end of sweep ; check with consecutive sweep -> fixed (made a script for it)
 adjusted unapply_motion_sweep script and works for the straight ahead sweep, though not perfect
-try out other sweeps
+try out other sweeps -> a bit more problems when there's rotation
+hmmm in 1810 of 2011_09_30_drive_0018 there's a rare occurrence of one of the laser firing an extra time, while the others don't at .1 degrees
+compare raw_unap data -> looks okayish but not perfect
 read poses, pose-times and velodyne-times from the odometry dataset
 ...discretize
