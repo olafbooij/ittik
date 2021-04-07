@@ -185,5 +185,5 @@ adjusted unapply_motion_sweep script and works for the straight ahead sweep, tho
 try out other sweeps -> a bit more problems when there's rotation
 hmmm in 1810 of 2011_09_30_drive_0018 there's a rare occurrence of one of the laser firing an extra time, while the others don't at .1 degrees
 compare raw_unap data -> looks okayish but not perfect
-read poses, pose-times and velodyne-times from the odometry dataset
+read poses, pose-times and velodyne-times from the odometry dataset -> seems poses are in camera frame or something... have to undo those calibrations
 ...discretize

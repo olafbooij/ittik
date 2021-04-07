@@ -40,10 +40,10 @@ namespace ittik
   }
 
   using Pose = Eigen::Isometry3d;
-  auto read_imu_velo_calib(const std::string base_path)
+  auto read_calib(const std::string filename)
   {
     Pose cal;
-    std::ifstream file(base_path + "calib_imu_to_velo.txt");
+    std::ifstream file(filename);
     std::string ignore;
     file >> ignore >> ignore >> ignore; // header with calib_time
 
@@ -61,6 +61,27 @@ namespace ittik
     assert(file.good());
 
     return cal;
+  }
+  auto read_imu_velo_calib(const std::string base_path)
+  {
+    return read_calib(base_path + "calib_imu_to_velo.txt");
+  }
+
+  auto read_odometry_poses(const std::string filename)
+  {
+    std::vector<Pose> poses;
+    std::ifstream file(filename);
+    Pose pose;
+    auto& m = pose.matrix();
+    m.row(3).setZero();
+    m(15) = 1;
+    while(
+          file >> m(0) >> m(4) >> m(8)  >> m(12)
+               >> m(1) >> m(5) >> m(9)  >> m(13)
+               >> m(2) >> m(6) >> m(10) >> m(14)
+         )
+      poses.push_back(pose);
+    return poses;
   }
 
   auto mercator(double lat, double lon)
