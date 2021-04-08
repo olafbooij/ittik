@@ -114,7 +114,7 @@ Let me check for which of the Odometry datasets the raw data is available
 02: 2011_10_03_drive_0034 000000 004660 -> residential
 03: 2011_09_26_drive_0067 000000 000800 -> nope
 04: 2011_09_30_drive_0016 000000 000270 -> road (only 1.1GB, but very straight) +3
-05: 2011_09_30_drive_0018 000000 002760 -> residential
+05: 2011_09_30_drive_0018 000000 002760 -> residential (bit big, lots of bents) +3
 06: 2011_09_30_drive_0020 000000 001100 -> residential
 07: 2011_09_30_drive_0027 000000 001100 -> residential
 08: 2011_09_30_drive_0028 001100 005170 -> residential
@@ -132,7 +132,7 @@ would be good to project to pixels like done in other works, and count the numbe
 
 Perhaps I should just not try to undo the egomotion, but just use the raw datasets instead. Let's try to find out the test-set.
 Download all raw data.... ~100 GB, 2MB/s -> 50K s = 14h (space for 150 GB on disc) ... turned out to be 244G
-odometry data: ll bin / 16 -> nr of points
+odometry data: ll bin / 16 -> nr of points (ls -l *.bin |awk '{print $5/16}')
 grrr, some hacky grepping revealed that none of the test-sets, except for 20 (from 2011_10_03_drive_0047), is in the raw sets.
 
 Hmmm, interesting btw: the odometry datasets are stored with higher .1mm accuracy.
@@ -186,4 +186,5 @@ try out other sweeps -> a bit more problems when there's rotation
 hmmm in 1810 of 2011_09_30_drive_0018 there's a rare occurrence of one of the laser firing an extra time, while the others don't at .1 degrees
 compare raw_unap data -> looks okayish but not perfect
 read poses, pose-times and velodyne-times from the odometry dataset -> seems poses are in camera frame or something... have to undo those calibrations -> calibrations are given in the odometry dataset (in yet a different form : - ), precisly described in the devkit/readme.txt of the odometry dataset
+comparing odo-poses with oxts for set 05. 3 scans difference. velodyne timestamp.txt is in the middle I assume, like odo pose. So 11:54:39.232045294, which is just after oxts 45 -> hmmm 65 is a much better fit (not perfect though), wonder if I'm doing something wrong
 ...discretize
