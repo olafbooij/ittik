@@ -9,10 +9,11 @@ int main(int argc, char* argv[])
   auto pose_time = read_pose_times(raw_data_path);
   auto poses = read_poses(raw_data_path, pose_time);
   {
+    for(auto& [time, pose]: poses)
+      pose = imu_p_lidar.inverse() * pose;
     Pose origin = poses.front().pose.inverse();
     for(auto& [time, pose]: poses)
-      // HACKING
-      pose = imu_p_lidar.inverse() * origin * pose * imu_p_lidar;
+      pose = origin * pose;
   }
   std::ofstream file(argv[2]);
   for(auto& [time, pose]: poses)
