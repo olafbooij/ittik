@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
   //poses = poses_;
   {
     for(auto& [time, pose]: poses)
-      pose = imu_p_lidar.inverse() * pose;
+      pose =  pose * imu_p_lidar;
     Pose origin = poses.front().pose.inverse();
     for(auto& [time, pose]: poses)
       pose = origin * pose;
