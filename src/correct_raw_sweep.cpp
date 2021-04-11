@@ -20,8 +20,6 @@ int main(int argc, char* argv[])
   while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
   {
     auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
-    if(position < -M_PI) position += 2*M_PI;
-    if(position > M_PI) position -= 2*M_PI;
     double horizontalAngle = atan2(point(1), point(0));
     double verticalAngle   = atan(point(2) / Eigen::Vector2d(point(0), point(1)).norm());
     if(position < -1 && horizontalAngle >  1) horizontalAngle -= 2 * M_PI;

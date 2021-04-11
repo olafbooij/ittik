@@ -18,9 +18,11 @@ int main(int argc, char* argv[])
   while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
   {
     auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
-    outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << std::endl;
+    double onestep = 2 * M_PI / 4000;
+    long pix = std::lround(position / onestep) + 1999;
+    if(pix == -1) pix = 3999;
+    outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << " " << pix << std::endl;
   }
-
   return 0;
 }
 
