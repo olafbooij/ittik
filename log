@@ -105,6 +105,7 @@ in which the device rotated 2pi*10 /s * .73 microsec = 45.9 microrad
 Clear that there some measurements dropped, as also visible in the measurements themselves
 
 Again: 100000 us / ((401.83 - 285.35) / 5) us = 4292.58 fires per sweep (of which roughly half is measured)
+  -> well, actually it is exactly 4000
 
 -------------------
 On to reverting the motion correction.
@@ -187,4 +188,5 @@ hmmm in 1810 of 2011_09_30_drive_0018 there's a rare occurrence of one of the la
 compare raw_unap data -> looks okayish but not perfect
 read poses, pose-times and velodyne-times from the odometry dataset -> seems poses are in camera frame or something... have to undo those calibrations -> calibrations are given in the odometry dataset (in yet a different form : - ), precisly described in the devkit/readme.txt of the odometry dataset
 comparing odo-poses with oxts for set 05. 3 scans difference. velodyne timestamp.txt is in the middle I assume, like odo pose. So 11:54:39.232045294, which is just after oxts 45 -> hmmm 65 is a much better fit (not perfect though), wonder if I'm doing something wrong
+-> Oh me.... just realized that the odometry test sets of course do not have poses. Sigh... Let's first try to see if it is actually sensible to put energy in doing the odometry stuff, by incalibrating the training sets based on the raw data.
 ...discretize

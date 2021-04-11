@@ -65,7 +65,6 @@ int main(int argc, char* argv[])
   // how to estimate adjustment...
   // it is perspective-n-point: N 3d points and I know where they should be measured 
   // one linear step (in some space) would suffice...
-  // -> first check if vertical angle is correct in raw data (anyway good to)
   // check on raw data, there sensor should be standing still.
 
 
