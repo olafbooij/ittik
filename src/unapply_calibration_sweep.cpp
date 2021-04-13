@@ -34,7 +34,8 @@ int main(int argc, char* argv[])
   auto maxpixel = std::lround(laserspread.second->rotCorrection / onestep);
   std::cout << minpixel << " " << maxpixel << std::endl;
 
-  Eigen::MatrixXi image(64, 4000 + maxpixel - minpixel);
+  //Eigen::MatrixXi image(64, 4000 + maxpixel - minpixel);
+  Eigen::MatrixXi image(64, 4000);
   int pointId = 0;
   Eigen::Vector3d point;
   double refl;
@@ -43,12 +44,29 @@ int main(int argc, char* argv[])
     auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
     long pix = std::lround(position / onestep) + 1999;
     if(pix == -1) pix = 3999;
-    pix += std::lround(calibration.at(probeId).rotCorrection / onestep) - minpixel;
+    //pix += std::lround(calibration.at(probeId).rotCorrection / onestep) - minpixel;
     image(vertId_, pix) = pointId;
     outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << " " << pix << std::endl;
     ++pointId;
   }
+  int targetI = 0;
+  for(int colI = 0; colI < image.cols(); ++colI)
+    if(image.col(colI).sum() > 0)
+      image.col(targetI++) = image.col(colI);
   write_pgm(image, std::ofstream("_unap.pgm"));
+
+  // TODO crunch the shift with the amount of crunching done in the image
+  Eigen::MatrixXi image_shifted(64, targetI + (maxpixel - minpixel);
+  for(int rowI = 0; rowI < image.rows(); ++rowI)
+  {
+    auto probeId = determine_probe_order(kitti_probe_calibration()).at(rowI);
+    //image.block(rowI, 0, 1, std::lround(calibration.at(probeId).rotCorrection / onestep)).setZero();
+    auto shift = std::lround(calibration.at(rowI).rotCorrection / onestep);
+    auto shiftcrunched = shift / image.cols() * targetI;
+    image_shifted.block(rowI, - minpixel + shiftcrunched, 1, targetI) = image.block(rowI, 0, 1, targetI);
+    //image.block(rowI, , 1, ).setZero();
+  }
+  write_pgm(image_shifted, std::ofstream("_unap_shifted.pgm"));
   return 0;
 }
 
