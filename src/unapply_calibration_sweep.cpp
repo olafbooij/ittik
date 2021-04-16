@@ -29,10 +29,6 @@ int main(int argc, char* argv[])
   auto calibration = kitti_probe_calibration();
 
   double onestep = 2 * M_PI / 4000;
-  auto laserspread = std::minmax_element(calibration.begin(), calibration.end(), [](auto a, auto b){return a.rotCorrection < b.rotCorrection;});
-  auto minpixel = std::lround(laserspread.first->rotCorrection  / onestep);
-  auto maxpixel = std::lround(laserspread.second->rotCorrection / onestep);
-  std::cout << minpixel << " " << maxpixel << std::endl;
 
   //Eigen::MatrixXi image(64, 4000 + maxpixel - minpixel);
   Eigen::MatrixXi image(64, 4000);
@@ -55,15 +51,20 @@ int main(int argc, char* argv[])
       image.col(targetI++) = image.col(colI);
   write_pgm(image, std::ofstream("_unap.pgm"));
 
-  // TODO crunch the shift with the amount of crunching done in the image
-  Eigen::MatrixXi image_shifted(64, targetI + (maxpixel - minpixel);
+  std::vector<int> shifts;
+  for(auto laser_calibration: calibration)
+    shifts.emplace_back(std::lround(laser_calibration.rotCorrection / onestep * targetI / image.cols()));
+  auto laserspread = std::minmax_element(shifts.begin(), shifts.end());
+  auto minpixel = *(laserspread.first);
+  auto maxpixel = *(laserspread.second);
+  std::cout << minpixel << " " << maxpixel << std::endl;
+
+  Eigen::MatrixXi image_shifted(64, targetI + (maxpixel - minpixel));
   for(int rowI = 0; rowI < image.rows(); ++rowI)
   {
     auto probeId = determine_probe_order(kitti_probe_calibration()).at(rowI);
     //image.block(rowI, 0, 1, std::lround(calibration.at(probeId).rotCorrection / onestep)).setZero();
-    auto shift = std::lround(calibration.at(rowI).rotCorrection / onestep);
-    auto shiftcrunched = shift / image.cols() * targetI;
-    image_shifted.block(rowI, - minpixel + shiftcrunched, 1, targetI) = image.block(rowI, 0, 1, targetI);
+    image_shifted.block(rowI, - minpixel + shifts.at(probeId), 1, targetI) = image.block(rowI, 0, 1, targetI);
     //image.block(rowI, , 1, ).setZero();
   }
   write_pgm(image_shifted, std::ofstream("_unap_shifted.pgm"));
