@@ -189,4 +189,5 @@ compare raw_unap data -> looks okayish but not perfect
 read poses, pose-times and velodyne-times from the odometry dataset -> seems poses are in camera frame or something... have to undo those calibrations -> calibrations are given in the odometry dataset (in yet a different form : - ), precisly described in the devkit/readme.txt of the odometry dataset
 comparing odo-poses with oxts for set 05. 3 scans difference. velodyne timestamp.txt is in the middle I assume, like odo pose. So 11:54:39.232045294, which is just after oxts 45 -> hmmm 65 is a much better fit (not perfect though), wonder if I'm doing something wrong
 -> Oh me.... just realized that the odometry test sets of course do not have poses. Sigh... Let's first try to see if it is actually sensible to put energy in doing the odometry stuff, by incalibrating the training sets based on the raw data.
-...discretize -> pretty simple with the uncalibrated raw data
+...discretize -> pretty simple with the uncalibrated raw data -> images look good
+create files with pixel location per point
