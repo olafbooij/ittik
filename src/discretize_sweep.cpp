@@ -9,16 +9,15 @@
 int main(int argc, char* argv[])
 {
   using namespace ittik;
-  SweepUncalibrator sweepUncalibrator;
 
-  std::ofstream outFile(argv[2]);
   auto calibration = kitti_probe_calibration();
 
   double stepangle = 2 * M_PI / 4000;
 
-  // first read in all points to find non-empty columns
+  // find non-empty columns
   std::array<int, 4000> points_per_column{};
   {
+    SweepUncalibrator sweepUncalibrator;
     std::ifstream sweepFile(argv[1]);
     Eigen::Vector3d point;
     double refl;
@@ -40,7 +39,6 @@ int main(int argc, char* argv[])
         column_x.at(colI) = x++;
   }
 
-  // TODO
   // get discrete shift per laser
   std::vector<int> shifts;
   for(auto laser_calibration: calibration)
@@ -50,14 +48,24 @@ int main(int argc, char* argv[])
   auto laserspread = std::minmax_element(shifts.begin(), shifts.end());
   auto minpixel = *(laserspread.first);
   auto maxpixel = *(laserspread.second);
+  std::cout << minpixel << " " << maxpixel << std::endl;
 
-  Eigen::MatrixXi image_shifted(64, targetI + (maxpixel - minpixel)); image_shifted.setZero();
-  for(int rowI = 0; rowI < imageR.rows(); ++rowI)
+  // determine for each point its coordinates
   {
-    auto probeId = determine_probe_order(kitti_probe_calibration()).at(rowI);
-    image_shifted.block(rowI, - minpixel + shifts.at(probeId), 1, targetI) = image.block(rowI, 0, 1, targetI);
-    //image.block(rowI, , 1, ).setZero();
+    std::ofstream outFile(argv[2]);
+    // repetez maintenant
+    SweepUncalibrator sweepUncalibrator;
+    std::ifstream sweepFile(argv[1]);
+    Eigen::Vector3d point;
+    double refl;
+    while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
+    {
+      auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
+      long pix = std::lround(position / stepangle) + 1999;
+      outFile << column_x.at(pix) - minpixel + shifts.at(probeId) << " " << vertId_ << std::endl; // could also do the column changes in column_x
+    }
   }
+
   return 0;
 }
 
