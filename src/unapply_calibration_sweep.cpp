@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
   std::ofstream outFile(argv[3]);
   auto calibration = kitti_probe_calibration();
 
-  double onestep = 2 * M_PI / 4000;
+  double stepangle = 2 * M_PI / 4000;
 
   //Eigen::MatrixXi image(64, 4000 + maxpixel - minpixel);
   Eigen::MatrixXi image(64, 4000); image.setZero();
@@ -61,15 +61,14 @@ int main(int argc, char* argv[])
   double refl;
   while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
   {
+    auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
     uint16_t semantic;
     uint16_t instance;
     semanticsFile.read(reinterpret_cast<char*>(&semantic), sizeof(decltype(semantic)));
     semanticsFile.read(reinterpret_cast<char*>(&instance), sizeof(decltype(instance)));
     auto [r, g, b] = color_map[semantic];
-    auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
-    long pix = std::lround(position / onestep) + 1999;
+    long pix = std::lround(position / stepangle) + 1999;
     if(pix == -1) pix = 3999;
-    //pix += std::lround(calibration.at(probeId).rotCorrection / onestep) - minpixel;
     image(vertId_, pix) = 255;
     imageR(vertId_, pix) = static_cast<int>(r);
     imageG(vertId_, pix) = static_cast<int>(g);
@@ -78,7 +77,6 @@ int main(int argc, char* argv[])
   }
   int targetI = 0;
   for(int colI = 0; colI < image.cols(); ++colI)
-  {
     if(image.col(colI).sum() > 0)
     {
       imageR.col(targetI) = imageR.col(colI);
@@ -86,12 +84,15 @@ int main(int argc, char* argv[])
       imageB.col(targetI) = imageB.col(colI);
       targetI++;
     }
-    }
-  write_pgm(imageR, std::ofstream("_unap.pgm"));
 
+  // get discrete shift per laser
   std::vector<int> shifts;
   for(auto laser_calibration: calibration)
-    shifts.emplace_back(std::lround(laser_calibration.rotCorrection / onestep * targetI / imageR.cols()));
+  {
+    shifts.emplace_back(-std::lround(
+    unapply_calibration(Eigen::Vector3d(20.,0.,0.), laser_calibration).first // assumption that objects are 20 meters away
+    / stepangle * targetI / imageR.cols()));
+  }
   auto laserspread = std::minmax_element(shifts.begin(), shifts.end());
   auto minpixel = *(laserspread.first);
   auto maxpixel = *(laserspread.second);
@@ -102,7 +103,6 @@ int main(int argc, char* argv[])
   for(int rowI = 0; rowI < imageR.rows(); ++rowI)
   {
     auto probeId = determine_probe_order(kitti_probe_calibration()).at(rowI);
-    //image.block(rowI, 0, 1, std::lround(calibration.at(probeId).rotCorrection / onestep)).setZero();
     imageR_shifted.block(rowI, - minpixel + shifts.at(probeId), 1, targetI) = imageR.block(rowI, 0, 1, targetI);
     imageG_shifted.block(rowI, - minpixel + shifts.at(probeId), 1, targetI) = imageG.block(rowI, 0, 1, targetI);
     imageB_shifted.block(rowI, - minpixel + shifts.at(probeId), 1, targetI) = imageB.block(rowI, 0, 1, targetI);
