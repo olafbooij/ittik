@@ -4,7 +4,7 @@
 
 namespace ittik {
   // color map from semantic-kitti-all.yaml (converted bgr to rgb)
-  using RGB = std::tuple<uint8_t, uint8_t, uint8_t>;
+  using RGB = std::tuple<int, int, int>;
   std::map<uint16_t, RGB> color_map
   {
    { 0  , {  0,   0,   0}},

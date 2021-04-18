@@ -8,8 +8,6 @@
 // ./unapply_calibration_sweep $KITTIDIR/2011_09_26/2011_09_26_drive_0002_extract/velodyne_points/data/0000000071.txt ittiked.sweep
 int main(int argc, char* argv[])
 {
-  using namespace ittik;
-
   auto calibration = kitti_probe_calibration();
 
   double stepangle = 2 * M_PI / 4000;
@@ -35,7 +33,7 @@ int main(int argc, char* argv[])
   {
     int x = 0;
     for(int colI = 0; colI < points_per_column.size(); ++colI)
-      if(points_per_columns.at(colI) > 0)
+      if(points_per_column.at(colI) > 0)
         column_x.at(colI) = x++;
   }
 
@@ -44,13 +42,13 @@ int main(int argc, char* argv[])
   for(auto laser_calibration: calibration)
     shifts.emplace_back(-std::lround(
     unapply_calibration(Eigen::Vector3d(20.,0.,0.), laser_calibration).first // assumption that objects are 20 meters away
-    / stepangle * targetI / imageR.cols()));
+    / stepangle * (column_x.back() + 1) / column_x.size()));
   auto laserspread = std::minmax_element(shifts.begin(), shifts.end());
   auto minpixel = *(laserspread.first);
   auto maxpixel = *(laserspread.second);
   std::cout << minpixel << " " << maxpixel << std::endl;
 
-  // determine for each point its coordinates
+  // determine for each point its pixel coordinates
   {
     std::ofstream outFile(argv[2]);
     // repetez maintenant
@@ -62,6 +60,7 @@ int main(int argc, char* argv[])
     {
       auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
       long pix = std::lround(position / stepangle) + 1999;
+      if(pix == -1) pix = 3999;
       outFile << column_x.at(pix) - minpixel + shifts.at(probeId) << " " << vertId_ << std::endl; // could also do the column changes in column_x
     }
   }

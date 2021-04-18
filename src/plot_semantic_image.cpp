@@ -37,80 +37,36 @@ void write_ppm(const ImageT& imageR,
 }
 
 
-// Read in a sweep file from the KITTI dataset and outputs raw measurement data (ignoring reflectivity values).
+// Create image (ppm) given a pixel coordinate file (made using discretize_sweep) and a semantics label file.
 // example usage:
-// ./unapply_calibration_sweep $KITTIDIR/2011_09_26/2011_09_26_drive_0002_extract/velodyne_points/data/0000000071.txt ittiked.sweep
+// ./unapply_calibration_sweep coords_file $SEMANTICKITTIDIR/sequences/04/labels/000000.label image.ppm
 int main(int argc, char* argv[])
 {
   using namespace ittik;
-  SweepUncalibrator sweepUncalibrator;
 
-  std::ifstream sweepFile(argv[1]);
+  std::ifstream coordsFile(argv[1]);
   std::ifstream semanticsFile(argv[2], std::ios::in | std::ios::binary);
-  std::ofstream outFile(argv[3]);
-  auto calibration = kitti_probe_calibration();
+  std::ofstream ppmFile(argv[3]);
 
-  double stepangle = 2 * M_PI / 4000;
-
-  //Eigen::MatrixXi image(64, 4000 + maxpixel - minpixel);
-  Eigen::MatrixXi image(64, 4000); image.setZero();
-  Eigen::MatrixXi imageR(64, 4000); imageR.setZero();
-  Eigen::MatrixXi imageG(64, 4000); imageG.setZero();
-  Eigen::MatrixXi imageB(64, 4000); imageB.setZero();
-  Eigen::Vector3d point;
-  double refl;
-  while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
+  Eigen::MatrixXi imageR(64, 2280); imageR.setZero();
+  Eigen::MatrixXi imageG(64, 2280); imageG.setZero();
+  Eigen::MatrixXi imageB(64, 2280); imageB.setZero();
+  int x, y;
+  while(coordsFile >> x >> y)
   {
-    auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
+    assert(y < 2280);
     uint16_t semantic;
     uint16_t instance;
     semanticsFile.read(reinterpret_cast<char*>(&semantic), sizeof(decltype(semantic)));
     semanticsFile.read(reinterpret_cast<char*>(&instance), sizeof(decltype(instance)));
     auto [r, g, b] = color_map[semantic];
-    long pix = std::lround(position / stepangle) + 1999;
-    if(pix == -1) pix = 3999;
-    image(vertId_, pix) = 255;
-    imageR(vertId_, pix) = static_cast<int>(r);
-    imageG(vertId_, pix) = static_cast<int>(g);
-    imageB(vertId_, pix) = static_cast<int>(b);
-    outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << " " << pix << std::endl;
+    imageR(y, x) = r;
+    imageG(y, x) = g;
+    imageB(y, x) = b;
   }
-  int targetI = 0;
-  for(int colI = 0; colI < image.cols(); ++colI)
-    if(image.col(colI).sum() > 0)
-    {
-      imageR.col(targetI) = imageR.col(colI);
-      imageG.col(targetI) = imageG.col(colI);
-      imageB.col(targetI) = imageB.col(colI);
-      targetI++;
-    }
-
-  // get discrete shift per laser
-  std::vector<int> shifts;
-  for(auto laser_calibration: calibration)
-  {
-    shifts.emplace_back(-std::lround(
-    unapply_calibration(Eigen::Vector3d(20.,0.,0.), laser_calibration).first // assumption that objects are 20 meters away
-    / stepangle * targetI / imageR.cols()));
-  }
-  auto laserspread = std::minmax_element(shifts.begin(), shifts.end());
-  auto minpixel = *(laserspread.first);
-  auto maxpixel = *(laserspread.second);
-
-  Eigen::MatrixXi imageR_shifted(64, targetI + (maxpixel - minpixel)); imageR_shifted.setZero();
-  Eigen::MatrixXi imageG_shifted(64, targetI + (maxpixel - minpixel)); imageG_shifted.setZero();
-  Eigen::MatrixXi imageB_shifted(64, targetI + (maxpixel - minpixel)); imageB_shifted.setZero();
-  for(int rowI = 0; rowI < imageR.rows(); ++rowI)
-  {
-    auto probeId = determine_probe_order(kitti_probe_calibration()).at(rowI);
-    imageR_shifted.block(rowI, - minpixel + shifts.at(probeId), 1, targetI) = imageR.block(rowI, 0, 1, targetI);
-    imageG_shifted.block(rowI, - minpixel + shifts.at(probeId), 1, targetI) = imageG.block(rowI, 0, 1, targetI);
-    imageB_shifted.block(rowI, - minpixel + shifts.at(probeId), 1, targetI) = imageB.block(rowI, 0, 1, targetI);
-    //image.block(rowI, , 1, ).setZero();
-  }
-  write_ppm(imageR_shifted, 
-            imageG_shifted,
-            imageB_shifted, std::ofstream("_unap_shifted.ppm"));
+  write_ppm(imageR,
+            imageG,
+            imageB, ppmFile);
   return 0;
 }
 
