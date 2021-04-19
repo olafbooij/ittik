@@ -110,17 +110,17 @@ Again: 100000 us / ((401.83 - 285.35) / 5) us = 4292.58 fires per sweep (of whic
 -------------------
 On to reverting the motion correction.
 Let me check for which of the Odometry datasets the raw data is available
-00: 2011_10_03_drive_0027 000000 004540 -> residential
-01: 2011_10_03_drive_0042 000000 001100 -> road (highway)
-02: 2011_10_03_drive_0034 000000 004660 -> residential
-03: 2011_09_26_drive_0067 000000 000800 -> nope
-04: 2011_09_30_drive_0016 000000 000270 -> road (only 1.1GB, but very straight) +3
-05: 2011_09_30_drive_0018 000000 002760 -> residential (bit big, lots of bents) +3
-06: 2011_09_30_drive_0020 000000 001100 -> residential
-07: 2011_09_30_drive_0027 000000 001100 -> residential
-08: 2011_09_30_drive_0028 001100 005170 -> residential
-09: 2011_09_30_drive_0033 000000 001590 -> residential
-10: 2011_09_30_drive_0034 000000 001200 -> residential
+00: 2011_10_03_drive_0027 000003 004543 -> residential
+01: 2011_10_03_drive_0042 000004 001104 -> road (highway)
+02: 2011_10_03_drive_0034 000003 004663 -> residential
+03: 2011_09_26_drive_0067 00000? 00080? -> nope
+04: 2011_09_30_drive_0016 000003 000273 -> road (only 1.1GB, but very straight) +3
+05: 2011_09_30_drive_0018 000003 002763 -> residential (bit big, lots of bents) +3
+06: 2011_09_30_drive_0020 000003 001103 -> residential
+07: 2011_09_30_drive_0027 0000?? 00110? -> residential (broken zip...)
+08: 2011_09_30_drive_0028 001103 005173 -> residential
+09: 2011_09_30_drive_0033 000003 001593 -> residential
+10: 2011_09_30_drive_0034 000003 001203 -> residential
 
 Only for 03 the raw data is missing. These are only the train sets and not the
 11 test sets. The Odometry data can only be downloaded as a whole.
@@ -190,4 +190,8 @@ read poses, pose-times and velodyne-times from the odometry dataset -> seems pos
 comparing odo-poses with oxts for set 05. 3 scans difference. velodyne timestamp.txt is in the middle I assume, like odo pose. So 11:54:39.232045294, which is just after oxts 45 -> hmmm 65 is a much better fit (not perfect though), wonder if I'm doing something wrong
 -> Oh me.... just realized that the odometry test sets of course do not have poses. Sigh... Let's first try to see if it is actually sensible to put energy in doing the odometry stuff, by incalibrating the training sets based on the raw data.
 ...discretize -> pretty simple with the uncalibrated raw data -> images look good
-create files with pixel location per point
+create files with pixel location per point -> script ready
+check where each dataset starts -> check, updated table. for 07 the zip is broken... should download again
+make script that unzips -> uncalibrates -> discretizes -> throws unzipped away
+put the data somewhere... (probably zipped 5gb)
+fix borders by using points from consecutive sweeps
