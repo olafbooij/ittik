@@ -48,13 +48,13 @@ int main(int argc, char* argv[])
   std::ifstream semanticsFile(argv[2], std::ios::in | std::ios::binary);
   std::ofstream ppmFile(argv[3]);
 
-  Eigen::MatrixXi imageR(64, 2280); imageR.setZero();
-  Eigen::MatrixXi imageG(64, 2280); imageG.setZero();
-  Eigen::MatrixXi imageB(64, 2280); imageB.setZero();
+  Eigen::MatrixXi imageR(64, 2282); imageR.setZero();
+  Eigen::MatrixXi imageG(64, 2282); imageG.setZero();
+  Eigen::MatrixXi imageB(64, 2282); imageB.setZero();
   int x, y;
   while(coordsFile >> x >> y)
   {
-    assert(y < 2280);
+    assert(x < 2282);
     uint16_t semantic;
     uint16_t instance;
     semanticsFile.read(reinterpret_cast<char*>(&semantic), sizeof(decltype(semantic)));
