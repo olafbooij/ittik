@@ -32,19 +32,17 @@ int main(int argc, char* argv[])
 
   // get a mapping from column to x-coordinate
   std::array<int, 4000> column_x{};
-  {
-    int x = 0;
-    for(int colI = 0; colI < points_per_column.size(); ++colI)
-      if(points_per_column.at(colI) > 0)
-        column_x.at(colI) = x++;
-  }
+  int nr_of_filled_cols = 0;
+  for(int colI = 0; colI < points_per_column.size(); ++colI)
+    if(points_per_column.at(colI) > 0)
+      column_x.at(colI) = nr_of_filled_cols++;
 
   // get discrete shift per laser
   std::vector<int> shifts;
   for(auto laser_calibration: calibration)
     shifts.emplace_back(-std::lround(
     unapply_calibration(Eigen::Vector3d(20.,0.,0.), laser_calibration).first // assumption that objects are 20 meters away
-    / stepangle * (column_x.back() + 1) / column_x.size()));
+    / stepangle * nr_of_filled_cols / column_x.size()));
   auto minpixel = *(std::min_element(shifts.begin(), shifts.end()));
   //std::cout << minpixel << " " << *(std::max_element(shifts.begin(), shifts.end())) << std::endl;
 
