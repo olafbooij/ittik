@@ -192,6 +192,11 @@ comparing odo-poses with oxts for set 05. 3 scans difference. velodyne timestamp
 ...discretize -> pretty simple with the uncalibrated raw data -> images look good
 create files with pixel location per point -> script ready
 check where each dataset starts -> check, updated table. for 07 the zip is broken... should download again
+fix N exceptions (in the 04 set)
+- shift seems not to be applied (04/0004)
+- single laser fired (04/0005)
+- missing image (04/0027)
 make script that unzips -> uncalibrates -> discretizes -> throws unzipped away
+fix M exceptions
 put the data somewhere... (probably zipped 5gb)
 fix borders by using points from consecutive sweeps
