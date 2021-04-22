@@ -3,9 +3,9 @@
 
 #include"unapply_calibration_sweep.hpp"
 
-// Read in a sweep file from the KITTI dataset and outputs raw measurement data (ignoring reflectivity values).
+// Read in a sweep file from the KITTI dataset and output for each point unique pixel coordinates
 // example usage:
-// ./unapply_calibration_sweep $KITTIDIR/2011_09_26/2011_09_26_drive_0002_extract/velodyne_points/data/0000000071.txt ittiked.sweep
+// ./unapply_calibration_sweep $KITTIDIR/2011_09_26/2011_09_26_drive_0002_extract/velodyne_points/data/0000000071.txt coords.txt
 int main(int argc, char* argv[])
 {
   auto calibration = kitti_probe_calibration();
@@ -13,6 +13,7 @@ int main(int argc, char* argv[])
   double stepangle = 2 * M_PI / 4000;
 
   // find non-empty columns
+  std::vector<std::tuple<int, int, int>> pointDiscreets;
   std::array<int, 4000> points_per_column{};
   {
     SweepUncalibrator sweepUncalibrator;
@@ -24,6 +25,7 @@ int main(int argc, char* argv[])
       auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
       long pix = std::lround(position / stepangle) + 1999;
       if(pix == -1) pix = 3999;
+      pointDiscreets.emplace_back(pix, probeId, vertId_);
       ++points_per_column.at(pix);
     }
   }
@@ -43,27 +45,13 @@ int main(int argc, char* argv[])
     shifts.emplace_back(-std::lround(
     unapply_calibration(Eigen::Vector3d(20.,0.,0.), laser_calibration).first // assumption that objects are 20 meters away
     / stepangle * (column_x.back() + 1) / column_x.size()));
-  auto laserspread = std::minmax_element(shifts.begin(), shifts.end());
-  auto minpixel = *(laserspread.first);
-  auto maxpixel = *(laserspread.second);
-  std::cout << minpixel << " " << maxpixel << std::endl;
+  auto minpixel = *(std::min_element(shifts.begin(), shifts.end()));
+  //std::cout << minpixel << " " << *(std::max_element(shifts.begin(), shifts.end())) << std::endl;
 
   // determine for each point its pixel coordinates
-  {
-    std::ofstream outFile(argv[2]);
-    // repetez maintenant
-    SweepUncalibrator sweepUncalibrator;
-    std::ifstream sweepFile(argv[1]);
-    Eigen::Vector3d point;
-    double refl;
-    while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
-    {
-      auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
-      long pix = std::lround(position / stepangle) + 1999;
-      if(pix == -1) pix = 3999;
-      outFile << column_x.at(pix) - minpixel + shifts.at(probeId) << " " << vertId_ << std::endl; // could also do the column changes in column_x
-    }
-  }
+  std::ofstream coordsFile(argv[2]);
+  for(auto& [pix, probeId, vertId_]: pointDiscreets)
+    coordsFile << column_x.at(pix) - minpixel + shifts.at(probeId) << " " << vertId_ << std::endl; // could also do the column changes in column_x
 
   return 0;
 }
