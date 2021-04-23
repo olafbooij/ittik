@@ -47,9 +47,19 @@ int main(int argc, char* argv[])
   //std::cout << minpixel << " " << *(std::max_element(shifts.begin(), shifts.end())) << std::endl;
 
   // determine for each point its pixel coordinates
-  std::ofstream coordsFile(argv[2]);
+  // save as binary
+  std::ofstream coordsFile(argv[2], std::ios::out | std::ios::binary);
   for(auto& [pix, probeId, vertId_]: pointDiscreets)
-    coordsFile << column_x.at(pix) - minpixel + shifts.at(probeId) << " " << vertId_ << std::endl; // could also do the column changes in column_x
+  {
+    uint16_t x = column_x.at(pix) - minpixel + shifts.at(probeId);
+    uint16_t y = vertId_;
+    coordsFile.write(reinterpret_cast<char*>(&x), sizeof(x));
+    coordsFile.write(reinterpret_cast<char*>(&y), sizeof(y));
+  }
+  //// save as txt
+  //std::ofstream coordsFile(argv[2]);
+  //for(auto& [pix, probeId, vertId_]: pointDiscreets)
+  //  coordsFile << column_x.at(pix) - minpixel + shifts.at(probeId) << " " << vertId_ << std::endl; // could also do the column changes in column_x
 
   return 0;
 }

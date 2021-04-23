@@ -44,21 +44,25 @@ int main(int argc, char* argv[])
 {
   using namespace ittik;
 
-  std::ifstream coordsFile(argv[1]);
+  std::ifstream coordsFile(argv[1], std::ios::in | std::ios::binary);
   std::ifstream semanticsFile(argv[2], std::ios::in | std::ios::binary);
   std::ofstream ppmFile(argv[3]);
 
   Eigen::MatrixXi imageR(64, 2282); imageR.setZero();
   Eigen::MatrixXi imageG(64, 2282); imageG.setZero();
   Eigen::MatrixXi imageB(64, 2282); imageB.setZero();
-  int x, y;
-  while(coordsFile >> x >> y)
+  while(coordsFile.good() && !coordsFile.eof())
   {
+    auto readunint16 = [](auto& file){
+      uint16_t var;
+      file.read(reinterpret_cast<char*>(&var), sizeof(var));
+      return var;
+    };
+    auto x = readunint16(coordsFile);
+    auto y = readunint16(coordsFile);
     assert(x < 2282);
-    uint16_t semantic;
-    uint16_t instance;
-    semanticsFile.read(reinterpret_cast<char*>(&semantic), sizeof(decltype(semantic)));
-    semanticsFile.read(reinterpret_cast<char*>(&instance), sizeof(decltype(instance)));
+    auto semantic = readunint16(semanticsFile);;
+    auto instance = readunint16(semanticsFile);;
     auto [r, g, b] = color_map[semantic];
     imageR(y, x) = r;
     imageG(y, x) = g;
