@@ -196,6 +196,7 @@ fix N exceptions (in the 04 set)
 V- shift seems not to be applied (04/0004)
 X- single laser fired (04/0005) -> hmmm, but it is annotated.... let's keep it in for now
 V- missing image (04/0027)
+Hmmm, there's inconsistencies in the semantic labeling, set 04, frame 219,220, pole turns into trunk
 make script that unzips -> uncalibrates -> discretizes -> throws unzipped away
 fix M exceptions
 put the data somewhere... (probably zipped 5gb)
