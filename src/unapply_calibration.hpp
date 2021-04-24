@@ -19,6 +19,13 @@ auto unapply_calibration(const Eigen::Vector3d point, const ProbeCalibration& ca
   return std::pair{position, distanceUncor};
 }
 
+auto vertical_angle_difference(const Eigen::Vector3d point, const ProbeCalibration& cal)
+{
+  auto distXYSquared = point(0) * point(0) + point(1) * point(1);
+  auto vertCorrection = atan((point(2) - cal.vertOffsetCorrection) / sqrt(distXYSquared));
+  return cal.vertCorrection - vertCorrection;
+}
+
 auto unapply_calibration_unknown_laser(const Eigen::Vector3d point, const Calibration& cals)
 {
   auto distXYSquared = point(0) * point(0) + point(1) * point(1);
