@@ -199,6 +199,6 @@ V- missing image (04/0027)
 Hmmm, there's inconsistencies in the semantic labeling, set 04, frame 219,220, pole turns into trunk
 make script that unzips -> uncalibrates -> discretizes -> throws unzipped away
 fix M exceptions
--> data set 00 rainbox luxaflex
+V- data set 00 rainbox luxaflex -> didn't load semantic data from disc, added check
 put the data somewhere... (probably zipped 5gb) 21290 sweeps * 172K (binary zipped) = 3.7 GB
 fix borders by using points from consecutive sweeps

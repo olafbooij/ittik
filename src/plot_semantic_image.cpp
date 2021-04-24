@@ -61,8 +61,9 @@ int main(int argc, char* argv[])
     auto x = readunint16(coordsFile);
     auto y = readunint16(coordsFile);
     assert(x < 2282);
-    auto semantic = readunint16(semanticsFile);;
-    auto instance = readunint16(semanticsFile);;
+    assert(semanticsFile.good());
+    auto semantic = readunint16(semanticsFile);
+    auto instance = readunint16(semanticsFile);
     auto [r, g, b] = color_map[semantic];
     imageR(y, x) = r;
     imageG(y, x) = g;
