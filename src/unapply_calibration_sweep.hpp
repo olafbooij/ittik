@@ -37,7 +37,8 @@ struct SweepUncalibrator
     double horizontalAngle = atan2(point(1), point(0));
     if(horizontalAngle < 0)
       horizontalAngle += 2 * M_PI;
-    if(horizontalAngle + .5 < horizontalAnglePrev_)  // the + .5 is just for rebustness needed for motion corrected data
+    float small_angle = .00001;
+    if(horizontalAngle + small_angle < horizontalAnglePrev_)  // the + small_angle is just for rebustness needed for motion corrected data
         ++vertId_;
     horizontalAnglePrev_ = horizontalAngle;
     return probeOrder_.at(vertId_);
