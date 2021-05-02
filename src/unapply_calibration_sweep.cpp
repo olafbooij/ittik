@@ -1,5 +1,8 @@
 #include<fstream>
 #include<Eigen/Core>
+#undef NDEBUG
+#include <cassert>
+#define NDEBUG
 
 #include"unapply_calibration_sweep.hpp"
 

@@ -47,7 +47,7 @@ struct SweepUncalibrator
         ++vertId_;
         assert(vertId_ < 64);
       }
-    print_vertical_angle_difference(point, kitti_probe_calibration().at(probeOrder_.at(vertId_)));
+    //print_vertical_angle_difference(point, kitti_probe_calibration().at(probeOrder_.at(vertId_)));
     //horizontalAnglePrev_ = horizontalAngle;
     return probeOrder_.at(vertId_);
   }
