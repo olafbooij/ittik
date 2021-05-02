@@ -194,14 +194,14 @@ create files with pixel location per point -> script ready
 check where each dataset starts -> check, updated table. for 07 the zip is broken... should download again
 fix N exceptions (in the 04 set)
 V- shift seems not to be applied (04/0004)
-X- single laser fired (04/0005) -> hmmm, but it is annotated.... let's keep it in for now
+V- single laser fired (04/0005) -> hmmm, but it is annotated.... let's keep it in for now -> aha, fixed this too, it was caused by using the wrong laser
 V- missing image (04/0027)
 Hmmm, there's inconsistencies in the semantic labeling, set 04, frame 219,220, pole turns into trunk
 make script that unzips -> uncalibrates -> discretizes -> throws unzipped away
 fix M exceptions
 V- data set 00 rainbox luxaflex -> didn't load semantic data from disc, added check
 V- data set 01 missing frames 257-428 -> it's just a stupid threshold I used to pick the next laser. fixed it.
-- still missing images...something wrong with 10 0858, and later with 01, eg 0480. -> I should create a more proper fix for this
+V- still missing images...something wrong with 10 0858, and later with 01, eg 0480. -> I should create a more proper fix for this -> trying way to differentiate lasers (works for 01. ... and for the rest)
 put the data somewhere... (probably zipped 5gb) 21290 sweeps * 500K (172K) binary (zipped) = 3.7 GB (10.6) -> mist
 fix borders by using points from consecutive sweeps
 compare different projections, e.g. set 00, frame 660 (cyclist from oposite direction); set 01, frame 429 (passing car)

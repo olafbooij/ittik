@@ -24,7 +24,6 @@ int main(int argc, char* argv[])
     auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
     outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << " " << std::endl;
   }
-  //std::cout << sweepUncalibrator.vertId_ << std::endl;
   assert(sweepUncalibrator.vertId_ == 63);
 
   return 0;
