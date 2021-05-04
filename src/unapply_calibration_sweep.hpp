@@ -28,14 +28,18 @@ struct SweepUncalibrator
     probeOrder_(determine_probe_order(kitti_probe_calibration()))
   {}
 
-  auto operator()(const Eigen::Vector3d& point)
+  auto get_probeId(const Eigen::Vector3d& point)
   {
     while(vertical_angle_difference(point, kitti_probe_calibration().at(probeOrder_.at(vertId_))) > .002)
     {
       ++vertId_;
       assert(vertId_ < 64);
     }
-    auto probeId = probeOrder_.at(vertId_);
+    return probeOrder_.at(vertId_);
+  }
+  auto operator()(const Eigen::Vector3d& point)
+  {
+    auto probeId = get_probeId(point);
     auto [position, distanceUncor] = unapply_calibration(point, kitti_probe_calibration().at(probeId));
     return std::make_tuple(probeId, position, distanceUncor, vertId_);
   }

@@ -17,7 +17,7 @@ auto readSweep(auto&& file)
   double refl;
   while(file >> point(0) >> point(1) >> point(2) >> refl)
   {
-    auto probeId = sweepUncalibrator.read(point);
+    auto probeId = sweepUncalibrator.get_probeId(point);
     assert(probeId < 65);
     sweep.at(probeId).emplace_back(point);
   }
