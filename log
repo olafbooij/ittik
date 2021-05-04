@@ -117,7 +117,7 @@ Let me check for which of the Odometry datasets the raw data is available
 04: 2011_09_30_drive_0016 000003 000273 -> road (only 1.1GB, but very straight) +3
 05: 2011_09_30_drive_0018 000003 002763 -> residential (bit big, lots of bents) +3
 06: 2011_09_30_drive_0020 000003 001103 -> residential
-07: 2011_09_30_drive_0027 0000?? 00110? -> residential (broken zip...) ... quite big it seems...
+07: 2011_09_30_drive_0027 000004 001104 -> residential
 08: 2011_09_30_drive_0028 001103 005173 -> residential
 09: 2011_09_30_drive_0033 000003 001593 -> residential
 10: 2011_09_30_drive_0034 000003 001203 -> residential
@@ -202,6 +202,6 @@ fix M exceptions
 V- data set 00 rainbox luxaflex -> didn't load semantic data from disc, added check
 V- data set 01 missing frames 257-428 -> it's just a stupid threshold I used to pick the next laser. fixed it.
 V- still missing images...something wrong with 10 0858, and later with 01, eg 0480. -> I should create a more proper fix for this -> trying way to differentiate lasers (works for 01. ... and for the rest)
-put the data somewhere... (probably zipped 5gb) 21290 sweeps * 500K (172K) binary (zipped) = 3.7 GB (10.6) -> mist
+put the data somewhere... (probably zipped 5gb) 21290 sweeps * 500K (172K) binary (zipped) = 3.7 GB (10.6) -> mist -> nice
 fix borders by using points from consecutive sweeps
 compare different projections, e.g. set 00, frame 660 (cyclist from oposite direction); set 01, frame 429 (passing car)
