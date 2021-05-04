@@ -6,12 +6,13 @@
 #include"io.hpp"
 #include"util.hpp"
 #include<unapply_calibration_sweep.hpp>
+#include<unapply_calibration_sweep_Triess.hpp>
 
 #include"liespline/se3_plot.hpp"
 
 auto readSweep(auto&& file)
 {
-  SweepUncalibrator sweepUncalibrator; // only using the reading part
+  SweepUncalibratorTriess sweepUncalibrator; // only using the reading part
   std::array<std::vector<Eigen::Vector3d>, 64> sweep;
   Eigen::Vector3d point;
   double refl;
@@ -36,25 +37,26 @@ int main(int argc, char* argv[])
   // take two
   // read all lidar data
   const auto sweep = readSweep(std::ifstream("00_odo.txt"));
-  // start at pi/2 device position
-  std::array<decltype(sweep.front().begin()), 64> lasersAtPose;
 
-  for(auto [probeId, lasers]: enumerate(sweep))
-  {
-    std::cout << probeId << " " << lasers.size() << std::endl << std::endl << std::endl;
-    for(auto point: lasers)
-      std::cout << unapply_calibration(point, kitti_probe_calibration().at(probeId)).first << std::endl;
-  }
-  for(auto [probeId, lasers]: enumerate(sweep))
-  {
-    std::cout << probeId << " " << lasers.size() << std::endl;
-    auto it = lasers.begin();
-    while(unapply_calibration(*it, kitti_probe_calibration().at(probeId)).first < M_PI/2.)
-      ++it;
-    lasersAtPose.at(probeId) = it;
-  }
-  for(auto [probeId, lasers]: enumerate(sweep))
-    std::cout << probeId << " " << lasers.size() << " " << lasersAtPose.at(probeId) - lasers.begin() << std::endl;
+  //for(auto [probeId, lasers]: enumerate(sweep))
+  //{
+  //  std::cout << probeId << " " << lasers.size() << std::endl << std::endl << std::endl;
+  //  for(auto point: lasers)
+  //    std::cout << unapply_calibration(point, kitti_probe_calibration().at(probeId)).first << std::endl;
+  //}
+
+  // start at pi/2 device position TODO, should just start at 0...
+  std::array<decltype(sweep.front().begin()), 64> lasersAtPose;
+  //for(auto [probeId, lasers]: enumerate(sweep))
+  //{
+  //  std::cout << probeId << " " << lasers.size() << std::endl;
+  //  auto it = lasers.begin();
+  //  while(unapply_calibration(*it, kitti_probe_calibration().at(probeId)).first < M_PI/2.)
+  //    ++it;
+  //  lasersAtPose.at(probeId) = it;
+  //}
+  //for(auto [probeId, lasers]: enumerate(sweep))
+  //  std::cout << probeId << " " << lasers.size() << " " << lasersAtPose.at(probeId) - lasers.begin() << std::endl;
 
   // step to future and past as follows
   // predict heading of measurement
