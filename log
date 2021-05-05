@@ -205,3 +205,6 @@ V- still missing images...something wrong with 10 0858, and later with 01, eg 04
 put the data somewhere... (probably zipped 5gb) 21290 sweeps * 500K (172K) binary (zipped) = 3.7 GB (10.6) -> mist -> nice
 fix borders by using points from consecutive sweeps
 compare different projections, e.g. set 00, frame 660 (cyclist from oposite direction); set 01, frame 429 (passing car)
+
+Focussing now on getting undoing the motion correction.
+Check how much measurements can still be unambigiously matched to rays (can also verify using raw data) -> should just plot it on top of each other

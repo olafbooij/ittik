@@ -29,7 +29,6 @@ auto readSweep(auto&& file)
 
 int main(int argc, char* argv[])
 {
-  using namespace std;
   using namespace ittik;
   //ifstream sweepFile(argv[1]);
   //ofstream outFile(argv[4]);
@@ -45,18 +44,16 @@ int main(int argc, char* argv[])
   //    std::cout << unapply_calibration(point, kitti_probe_calibration().at(probeId)).first << std::endl;
   //}
 
-  // start at pi/2 device position TODO, should just start at 0...
   std::array<decltype(sweep.front().begin()), 64> lasersAtPose;
-  //for(auto [probeId, lasers]: enumerate(sweep))
-  //{
-  //  std::cout << probeId << " " << lasers.size() << std::endl;
-  //  auto it = lasers.begin();
-  //  while(unapply_calibration(*it, kitti_probe_calibration().at(probeId)).first < M_PI/2.)
-  //    ++it;
-  //  lasersAtPose.at(probeId) = it;
-  //}
-  //for(auto [probeId, lasers]: enumerate(sweep))
-  //  std::cout << probeId << " " << lasers.size() << " " << lasersAtPose.at(probeId) - lasers.begin() << std::endl;
+  for(auto [probeId, lasers]: enumerate(sweep))
+    lasersAtPose.at(probeId) = lasers.begin();
+
+  // take one rotation step, check which next measurements fit.
+  // do this for say 100 steps, or until there's 2 or 3 times none fitting...
+  // fit a pose using pnp on all 100 steps
+  // next 100 steps (or sliding window).
+
+
 
   // step to future and past as follows
   // predict heading of measurement
