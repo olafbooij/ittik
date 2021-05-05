@@ -6,6 +6,7 @@
 
 #include<calibration_kitti.hpp>
 #include<unapply_calibration.hpp>
+#include"unapply_calibration_sweep.hpp" // determine_probe_order
 
 // This helper class should be fed with points in the order as stored in the
 // KITTI dataset. The probe number for each point can then be simply determined
