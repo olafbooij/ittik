@@ -64,17 +64,25 @@ int main(int argc, char* argv[])
   }
 
   // unapply and check if they match with a ground truth measurement
-  double stepangle = 2 * M_PI / 4000;
-  for(auto [probeId, lasers]: enumerate(sweep))
+  auto errorFunc = [&](auto laserPcloud)
   {
-    for(auto laserIt = lasersAtPoseStart.at(probeId); laserIt != lasersAtPoseEnd.at(probeId); ++laserIt)
+    double error = 0;
+    double stepangle = 2 * M_PI / 4000;
+    for(auto [probeId, lasers]: enumerate(sweep))
     {
-      auto [position, distanceUncor] = unapply_calibration(*laserIt, kitti_probe_calibration().at(probeId));
-      auto error = position - std::lround(position / stepangle) * stepangle;
-      std::cout << probeId << " " << error << std::endl;
-
+      for(auto laserIt = lasersAtPoseStart.at(probeId); laserIt != lasersAtPoseEnd.at(probeId); ++laserIt)
+      {
+        auto pointLaser = laserPcloud * (*laserIt);
+        auto [position, distanceUncor] = unapply_calibration(pointLaser, kitti_probe_calibration().at(probeId));
+        error += position - std::lround(position / stepangle) * stepangle;
+      }
     }
-  }
+    return error;
+  };
+  std::cout << errorFunc(liespline::Isometryd3::Identity()) << std::endl;
+  // use some silly generic function to minimize the error by changing the pose...
+
+
 
   // estimate pose (pnp) using matches
   //   it is perspective-n-point: N 3d points and I know where they should be measured 
