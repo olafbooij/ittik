@@ -39,36 +39,46 @@ int main(int argc, char* argv[])
 
   //for(auto [probeId, lasers]: enumerate(sweep))
   //{
-  //  std::cout << probeId << " " << lasers.size() << std::endl << std::endl << std::endl;
-  //  for(auto point: lasers)
-  //    std::cout << unapply_calibration(point, kitti_probe_calibration().at(probeId)).first << std::endl;
+  //  //std::cout << probeId << " " << lasers.size() << std::endl << std::endl << std::endl;
+  //  //for(auto point: lasers)
+  //  for(auto pointI = 0; pointI < 100; ++pointI)
+  //  {
+  //    auto [position, distanceUncor] = unapply_calibration(lasers.at(pointI), kitti_probe_calibration().at(probeId));
+  //    std::cout << probeId << " " << position << " " << distanceUncor << std::endl;
+  //  }
   //}
 
-  std::array<decltype(sweep.front().begin()), 64> lasersAtPose;
+  std::array<decltype(sweep.front().begin()), 64> lasersAtPoseStart;
+  std::array<decltype(sweep.front().begin()), 64> lasersAtPoseEnd;
   for(auto [probeId, lasers]: enumerate(sweep))
-    lasersAtPose.at(probeId) = lasers.begin();
+    lasersAtPoseEnd.at(probeId) = lasersAtPoseStart.at(probeId) = lasers.begin();
 
-  // take one rotation step, check which next measurements fit.
-  // do this for say 100 steps, or until there's 2 or 3 times none fitting...
-  // fit a pose using pnp on all 100 steps
-  // next 100 steps (or sliding window).
+  // take next points up to .05 rad away from current angle per laser
+  // perhaps should iterate until error gets to large
+  for(auto [probeId, lasers]: enumerate(sweep))
+  {
+    auto& laserEnd = lasersAtPoseEnd.at(probeId);
+    while(atan2((*laserEnd)(1), (*laserEnd)(0)) < .1)
+      ++laserEnd;
+    //std::cout << laserEnd - lasersAtPoseStart.at(probeId) << std::endl;
+  }
 
+  // unapply and check if they match with a ground truth measurement
+  double stepangle = 2 * M_PI / 4000;
+  for(auto [probeId, lasers]: enumerate(sweep))
+  {
+    for(auto laserIt = lasersAtPoseStart.at(probeId); laserIt != lasersAtPoseEnd.at(probeId); ++laserIt)
+    {
+      auto [position, distanceUncor] = unapply_calibration(*laserIt, kitti_probe_calibration().at(probeId));
+      auto error = position - std::lround(position / stepangle) * stepangle;
+      std::cout << probeId << " " << error << std::endl;
 
+    }
+  }
 
-  // step to future and past as follows
-  // predict heading of measurement
-  // match actual measurement
-  // estimate adjustment of pose given matched measurements
-  // perhaps not use oxts data, only to compare pose found 
-
-  // how to estimate adjustment...
-  // it is perspective-n-point: N 3d points and I know where they should be measured 
-  // one linear step (in some space) would suffice...
-  // check on raw data, there sensor should be standing still.
-
-
-
-
+  // estimate pose (pnp) using matches
+  //   it is perspective-n-point: N 3d points and I know where they should be measured 
+  //   one linear step (in some space) would suffice...
 
   return 0;
 }
