@@ -10,6 +10,8 @@
 
 #include"liespline/se3_plot.hpp"
 
+#include"optimizer.hpp"
+
 auto readSweep(auto&& file)
 {
   SweepUncalibratorTriess sweepUncalibrator; // only using the reading part
@@ -33,28 +35,14 @@ int main(int argc, char* argv[])
   //ifstream sweepFile(argv[1]);
   //ofstream outFile(argv[4]);
 
-  // take two
-  // read all lidar data
   const auto sweep = readSweep(std::ifstream("00_odo.txt"));
 
-  //for(auto [probeId, lasers]: enumerate(sweep))
-  //{
-  //  //std::cout << probeId << " " << lasers.size() << std::endl << std::endl << std::endl;
-  //  //for(auto point: lasers)
-  //  for(auto pointI = 0; pointI < 100; ++pointI)
-  //  {
-  //    auto [position, distanceUncor] = unapply_calibration(lasers.at(pointI), kitti_probe_calibration().at(probeId));
-  //    std::cout << probeId << " " << position << " " << distanceUncor << std::endl;
-  //  }
-  //}
 
   std::array<decltype(sweep.front().begin()), 64> lasersAtPoseStart;
   std::array<decltype(sweep.front().begin()), 64> lasersAtPoseEnd;
   for(auto [probeId, lasers]: enumerate(sweep))
     lasersAtPoseEnd.at(probeId) = lasersAtPoseStart.at(probeId) = lasers.begin();
 
-  // take next points up to .05 rad away from current angle per laser
-  // perhaps should iterate until error gets to large
   for(auto [probeId, lasers]: enumerate(sweep))
   {
     auto& laserEnd = lasersAtPoseEnd.at(probeId);
@@ -74,19 +62,23 @@ int main(int argc, char* argv[])
       {
         auto pointLaser = laserPcloud * (*laserIt);
         auto [position, distanceUncor] = unapply_calibration(pointLaser, kitti_probe_calibration().at(probeId));
-        error += position - std::lround(position / stepangle) * stepangle;
+        error += fabs(position - std::lround(position / stepangle) * stepangle);
+        // add the vertical angle part
       }
     }
-    return error;
+    return Eigen::Matrix<double, 1, 1>(error);
   };
   std::cout << errorFunc(liespline::Isometryd3::Identity()) << std::endl;
+  auto estimate = liespline::Isometryd3::Identity();
+  for(int i=9000;i--;)
+    std::cout << liespline::logse3(estimate).transpose() << " "
+              << errorFunc(estimate = gradient_descent_step(estimate, errorFunc))  << std::endl;
+              // ...try out gaus-newton... -> levenberg marquardt
+
+
+
   // use some silly generic function to minimize the error by changing the pose...
 
-
-
-  // estimate pose (pnp) using matches
-  //   it is perspective-n-point: N 3d points and I know where they should be measured 
-  //   one linear step (in some space) would suffice...
 
   return 0;
 }
