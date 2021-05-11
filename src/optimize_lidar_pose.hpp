@@ -19,7 +19,7 @@ namespace ittik {
       jacobian.row(dim) = (error_function(estimate_plus) - current_error) / epsilon;
     }
 
-    const double step_size = 1e-7;
+    const double step_size = 4e-7;
     auto delta = (step_size * jacobian * current_error).eval();
     ////gaus newton
     //Eigen::JacobiSVD<Eigen::MatrixXd> svd((jacobian * jacobian.transpose()).eval(), Eigen::ComputeThinU | Eigen::ComputeThinV);
