@@ -10,7 +10,7 @@
 
 #include"liespline/se3_plot.hpp"
 
-#include"optimizer.hpp"
+#include"optimize_lidar_pose.hpp"
 
 auto readSweep(auto&& file)
 {
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
   // unapply and check if they match with a ground truth measurement
   auto errorFunc = [&](auto laserPcloud)
   {
-    double error = 0;
+    Eigen::Vector2d error{0., 0.};
     double stepangle = 2 * M_PI / 4000;
     for(auto [probeId, lasers]: enumerate(sweep))
     {
@@ -62,11 +62,11 @@ int main(int argc, char* argv[])
       {
         auto pointLaser = laserPcloud * (*laserIt);
         auto [position, distanceUncor] = unapply_calibration(pointLaser, kitti_probe_calibration().at(probeId));
-        error += fabs(position - std::lround(position / stepangle) * stepangle);
-        // add the vertical angle part
+        error(0) += fabs(position - std::lround(position / stepangle) * stepangle);
+        error(1) += fabs(vertical_angle_difference(pointLaser, kitti_probe_calibration().at(probeId)));
       }
     }
-    return Eigen::Matrix<double, 1, 1>(error);
+    return error;
   };
   std::cout << errorFunc(liespline::Isometryd3::Identity()) << std::endl;
   auto estimate = liespline::Isometryd3::Identity();

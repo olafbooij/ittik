@@ -208,3 +208,5 @@ compare different projections, e.g. set 00, frame 660 (cyclist from oposite dire
 
 Focussing now on getting undoing the motion correction.
 Check how much measurements can still be unambigiously matched to rays (can also verify using raw data) -> should just plot it on top of each other -> seems about .1 rad when using absolute angle
+just one gradient descent step *should* be enough...
+check if error is low when using oxts based pose

@@ -8,7 +8,7 @@ namespace ittik {
   auto gradient_descent_step(const liespline::Isometryd3& estimate, error_functionT&& error_function)
   {
     const double epsilon = 1e-7;
-    Eigen::Matrix<double, 6, 1> jacobian;
+    Eigen::Matrix<double, 6, 2> jacobian;
     auto current_error = error_function(estimate);
     for(int dim = 0; dim < 6; ++dim)
     {
