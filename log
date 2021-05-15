@@ -209,7 +209,7 @@ compare different projections, e.g. set 00, frame 660 (cyclist from oposite dire
 Focussing now on getting undoing the motion correction.
 Check how much measurements can still be unambigiously matched to rays (can also verify using raw data) -> should just plot it on top of each other -> seems about .1 rad when using absolute angle
 just one gradient descent step *should* be enough... -> hmmm, seeing the gradient descent steps, perhaps lm would be a better fit..
--check if vertical error has outliers -> yes, there's an outlier (most have < 1e-4, some 1e3, outlier 1e2
--compare errors with raw sweep
--implement lm
--check if error is low when using oxts based pose
+V-check if vertical error has outliers -> yes, there's an outlier (most have < 1e-4, some 1e3, outlier 1e2
+V-compare errors with raw sweep -> clearly shows lack of convergence (although with lm better)
+V-implement lm -> works quite nicely... probably overfitting...
+-check if error is low when using oxts based pose -> 00_odo .05rad should have pose 0.0101147 -7.00172e-06  4.35662e-05  9.10794e-06  1.32077e-05  1.83678e-06 (i.e. moving forward a cm, no rotation. hmmm 1m /scan, 10m/s, 36km/h (not that fast...))
