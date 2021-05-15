@@ -19,12 +19,40 @@ namespace ittik {
       jacobian.row(dim) = (error_function(estimate_plus) - current_error) / epsilon;
     }
 
-    const double step_size = 4e-7;
-    auto delta = (step_size * jacobian * current_error).eval();
+    //const double step_size = 1e-5;
+    //auto delta = (step_size * jacobian * current_error).eval();
+    //return estimate * liespline::expse3(-delta);
     ////gaus newton
     //Eigen::JacobiSVD<Eigen::MatrixXd> svd((jacobian * jacobian.transpose()).eval(), Eigen::ComputeThinU | Eigen::ComputeThinV);
     //auto delta = svd.solve(jacobian * current_error).eval();
-    return estimate * liespline::expse3(-delta);
+    //return estimate * liespline::expse3(-delta);
+
+    ////levenberg_marquardt
+    double lambda = 1e-7; // para
+    auto prev_error = current_error;
+    Eigen::Matrix<double, 6, 1> delta;
+    auto estimate_updated = estimate;
+    do
+    {
+      auto jacjacT = (jacobian * jacobian.transpose()).eval();
+      Eigen::JacobiSVD<Eigen::MatrixXd> svd((jacjacT + lambda * decltype(jacjacT)::Identity()).eval(), Eigen::ComputeThinU | Eigen::ComputeThinV);
+      delta = svd.solve(jacobian * prev_error).eval();
+
+      auto estimate_prev = estimate_updated;
+      estimate_updated = estimate_prev * liespline::expse3(-delta);
+      auto error = error_function(estimate_updated);
+      if(error.norm() < prev_error.norm())
+      {
+        lambda /= 2;
+        prev_error = error;
+      }
+      else
+      {
+        lambda *= 2;
+        estimate_updated = estimate_prev;
+      }
+    } while(delta.norm() > 1e-8);
+    return estimate_updated;
   }
 }
 
