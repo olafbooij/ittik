@@ -61,7 +61,9 @@ int main(int argc, char* argv[])
     {
       for(auto laserIt = lasersAtPoseStart.at(probeId); laserIt != lasersAtPoseEnd.at(probeId); ++laserIt)
       {
-        Eigen::Vector3d pointLaser = laserPcloud * (*laserIt);
+        auto hori_angle = atan2((*laserIt)(1), (*laserIt)(0));
+        auto estimate = liespline::expse3(hori_angle / .05 * liespline::logse3(laserPcloud));
+        Eigen::Vector3d pointLaser = estimate * (*laserIt);
         auto [position, distanceUncor] = unapply_calibration(pointLaser, kitti_probe_calibration().at(probeId));
         Eigen::Vector2d sample_error{position - std::lround(position / stepangle) * stepangle,
                                      vertical_angle_difference(pointLaser, kitti_probe_calibration().at(probeId))};
@@ -75,21 +77,27 @@ int main(int argc, char* argv[])
         }
       }
     }
-    //error(0) = sqrt(error(0));
+    error(0) = sqrt(error(0));
     //error(1) = sqrt(error(1));
     //error(0) *= 1000;
     //error(1) *= 1000;
     return error;
   };
 
-  auto estimate = liespline::Isometryd3::Identity();
+  //auto estimate = liespline::Isometryd3::Identity();
+  //Eigen::Matrix<double, 6, 1> pose_from_oxts; pose_from_oxts << 0.0101147, -7.00172e-06, 4.35662e-05, 9.10794e-06, 1.32077e-05, 1.83678e-06;
+  Eigen::Matrix<double, 6, 1> guess; guess << 0., 0., 0., 0., 0., 0.;
+  auto estimate = liespline::expse3(guess);
 
   {
     double stepangle = 2 * M_PI / 4000;
     for(auto [probeId, lasers]: enumerate(sweep))
       for(auto laserIt = lasersAtPoseStart.at(probeId); laserIt != lasersAtPoseEnd.at(probeId); ++laserIt)
       {
-        Eigen::Vector3d pointLaser = estimate * (*laserIt);
+        auto hori_angle = atan2((*laserIt)(1), (*laserIt)(0));
+        auto estimate_ = liespline::expse3(hori_angle / .05 * liespline::logse3(estimate));
+
+        Eigen::Vector3d pointLaser = estimate_ * (*laserIt);
         auto [position, distanceUncor] = unapply_calibration(pointLaser, kitti_probe_calibration().at(probeId));
         Eigen::Vector2d sample_error{position - std::lround(position / stepangle) * stepangle,
                                      vertical_angle_difference(pointLaser, kitti_probe_calibration().at(probeId))};
@@ -98,7 +106,7 @@ int main(int argc, char* argv[])
       }
   }
   //errorFunc(estimate);
-  for(int i=1e3;i--;)
+  for(int i=1e5;i--;)
   //for(int i=1;i--;)
   {
     std::cout << liespline::logse3(estimate).transpose() << " "
@@ -123,7 +131,9 @@ int main(int argc, char* argv[])
     for(auto [probeId, lasers]: enumerate(sweep))
       for(auto laserIt = lasersAtPoseStart.at(probeId); laserIt != lasersAtPoseEnd.at(probeId); ++laserIt)
       {
-        Eigen::Vector3d pointLaser = estimate * (*laserIt);
+        auto hori_angle = atan2((*laserIt)(1), (*laserIt)(0));
+        auto estimate_ = liespline::expse3(hori_angle / .05 * liespline::logse3(estimate));
+        Eigen::Vector3d pointLaser = estimate_ * (*laserIt);
         auto [position, distanceUncor] = unapply_calibration(pointLaser, kitti_probe_calibration().at(probeId));
         Eigen::Vector2d sample_error{position - std::lround(position / stepangle) * stepangle,
                                      vertical_angle_difference(pointLaser, kitti_probe_calibration().at(probeId))};

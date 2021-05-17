@@ -27,8 +27,8 @@ namespace ittik {
     //auto delta = svd.solve(jacobian * current_error).eval();
     //return estimate * liespline::expse3(-delta);
 
-    ////levenberg_marquardt
-    double lambda = 1e-7; // para
+    //levenberg_marquardt
+    double lambda = 1e-9; // para
     auto prev_error = current_error;
     Eigen::Matrix<double, 6, 1> delta;
     auto estimate_updated = estimate;
