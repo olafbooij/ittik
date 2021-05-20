@@ -35,47 +35,60 @@ int main(int argc, char* argv[])
   std::ifstream sweepFile(argv[1]);
   //std::ofstream outFile(argv[4]);
 
-  const auto sweep = readSweep(sweepFile);
-
-  std::array<decltype(sweep.front().begin()), 64> lasersAtPoseStart;
-  std::array<decltype(sweep.front().begin()), 64> lasersAtPoseEnd;
-  for(auto [probeId, lasers]: enumerate(sweep))
-    lasersAtPoseEnd.at(probeId) = lasersAtPoseStart.at(probeId) = lasers.begin();
-
-  for(auto [probeId, lasers]: enumerate(sweep))
+  std::vector<std::tuple<Eigen::Vector3d, int, double>> points;
   {
-    auto& laserEnd = lasersAtPoseEnd.at(probeId);
-    while(atan2((*laserEnd)(1), (*laserEnd)(0)) < .1)
-      ++laserEnd;
-    //std::cout << laserEnd - lasersAtPoseStart.at(probeId) << std::endl;
+    const auto sweep = readSweep(sweepFile);
+
+    // flatten
+    for(auto [probeId, lasers]: enumerate(sweep))
+      for(auto point: lasers)
+        points.emplace_back(point, probeId, atan2(point(1), point(0)));
   }
+
+  // sort based on horizontal angle
+  std::sort(points.begin(), points.end(), [](auto a, auto b){return std::get<2>(a) < std::get<2>(b);});
+
+  // take "middle"
+  auto point_at_ref = std::lower_bound(points.begin(), points.end(), 0., [](auto a, auto b){return std::get<2>(a) < b;});
+
+  double stepangle = 2 * M_PI / 4000;
+
+  // take points until error threshold
+  double hori_error = 0.;
+  auto last_point = point_at_ref;
+  while(hori_error < stepangle / 4)
+  {
+    auto& [point, probeId, hori_angle] = *last_point;
+    //auto estimate = liespline::expse3(hori_angle / .05 * liespline::logse3(laserPcloud));
+    //Eigen::Vector3d pointLaser = estimate * (*pointIt);
+    auto [position, distanceUncor] = unapply_calibration(point, kitti_probe_calibration().at(probeId));
+    hori_error = position - std::lround(position / stepangle) * stepangle;
+    ++last_point;
+  }
+  std::cout << std::distance(point_at_ref, last_point) << std::endl;
 
   // unapply and check if they match with a ground truth measurement
   auto errorFunc = [&](auto laserPcloud, std::string logfilename = std::string())
   {
     Eigen::Vector2d error{0., 0.};
-    double stepangle = 2 * M_PI / 4000;
-    for(auto [probeId, lasers]: enumerate(sweep))
+    for(auto pointIt = point_at_ref; pointIt != last_point; ++pointIt)
     {
-      for(auto laserIt = lasersAtPoseStart.at(probeId); laserIt != lasersAtPoseEnd.at(probeId); ++laserIt)
+      auto& [point, probeId, hori_angle] = *pointIt;
+      auto estimate = liespline::expse3(hori_angle / .05 * liespline::logse3(laserPcloud));
+      Eigen::Vector3d pointLaser = estimate * point;
+      auto [position, distanceUncor] = unapply_calibration(pointLaser, kitti_probe_calibration().at(probeId));
+      Eigen::Vector2d sample_error{position - std::lround(position / stepangle) * stepangle,
+                                   vertical_angle_difference(pointLaser, kitti_probe_calibration().at(probeId))};
+      //if(fabs(sample_error(1)) < .005)
       {
-        auto hori_angle = atan2((*laserIt)(1), (*laserIt)(0));
-        auto estimate = liespline::expse3(hori_angle / .05 * liespline::logse3(laserPcloud));
-        Eigen::Vector3d pointLaser = estimate * (*laserIt);
-        auto [position, distanceUncor] = unapply_calibration(pointLaser, kitti_probe_calibration().at(probeId));
-        Eigen::Vector2d sample_error{position - std::lround(position / stepangle) * stepangle,
-                                     vertical_angle_difference(pointLaser, kitti_probe_calibration().at(probeId))};
-        //if(fabs(sample_error(1)) < .005)
-        {
-          //error(0) += sample_error.norm();
-          error(0) += sample_error(0) * sample_error(0);
-          //error(1) += sample_error(1) * sample_error(1);
-        }
-        if(! logfilename.empty())
-        {
-          static std::ofstream logfile("err_after"); // logging
-          logfile << " " << position << " " << probeId << " " << std::lround(position / stepangle) * stepangle << " " << sample_error(1) << std::endl;
-        }
+        //error(0) += sample_error.norm();
+        error(0) += sample_error(0) * sample_error(0);
+        //error(1) += sample_error(1) * sample_error(1);
+      }
+      if(! logfilename.empty())
+      {
+        static std::ofstream logfile("err_after"); // logging
+        logfile << " " << position << " " << probeId << " " << std::lround(position / stepangle) * stepangle << " " << sample_error(1) << std::endl;
       }
     }
     error(0) = sqrt(error(0));
@@ -84,6 +97,7 @@ int main(int argc, char* argv[])
   };
 
   auto estimate = liespline::Isometryd3::Identity();
+
   errorFunc(estimate, "err"); // logging
 
   for(int i=1e5;i--;)
