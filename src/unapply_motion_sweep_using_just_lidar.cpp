@@ -48,9 +48,6 @@ int main(int argc, char* argv[])
   // sort based on horizontal angle
   std::sort(points.begin(), points.end(), [](auto a, auto b){return std::get<2>(a) < std::get<2>(b);});
 
-  // take "middle"
-  auto point_at_ref = std::lower_bound(points.begin(), points.end(), 0., [](auto a, auto b){return std::get<2>(a) < b;});
-
   double stepangle = 2 * M_PI / 4000;
 
   auto point_error_func = [&stepangle](auto point, auto laserPcloud)
@@ -63,49 +60,45 @@ int main(int argc, char* argv[])
     return hori_error;
   };
 
-  // take points until error threshold
-  auto estimate = liespline::Isometryd3::Identity();
-  double hori_error = 0.;
-  auto last_point = point_at_ref;
-  while(point_error_func(*last_point, estimate) < stepangle / 4)
-    ++last_point;
-
-  std::cout << std::distance(point_at_ref, last_point) << std::endl;
+  // take "middle"
+  auto point_at_ref = std::lower_bound(points.begin(), points.end(), 0., [](auto a, auto b){return std::get<2>(a) < b;});
+  auto first_point = point_at_ref;
+  auto last_point  = point_at_ref;
 
   // unapply and check if they match with a ground truth measurement
-  //auto errorFunc = [&](auto laserPcloud, std::string logfilename = std::string())
-  auto errorFunc = [&point_at_ref, &point_error_func, &last_point](auto laserPcloud)
+  auto error_func = [&first_point, &point_error_func, &last_point](auto laserPcloud)
   {
     Eigen::Vector2d error{0., 0.};
-    for(auto pointIt = point_at_ref; pointIt != last_point; ++pointIt)
+    for(auto pointIt = first_point; pointIt != last_point; ++pointIt)
     {
       auto hori_error = point_error_func(*pointIt, laserPcloud);
       error(0) += hori_error * hori_error;
-      //if(! logfilename.empty())
-      //{
-      //  static std::ofstream logfile(logfilename); // logging
-      //  logfile << " " << position << " " << probeId << " " << std::lround(position / stepangle) * stepangle << " " << sample_error(1) << std::endl;
-      //}
     }
-    error(0) = sqrt(error(0));
+    error(0) = sqrt(error(0) / (last_point - first_point));
     return error;
   };
 
-
-  errorFunc(estimate); // logging
+  // take points until error threshold
+  Eigen::Matrix<double, 6, 1> estimate_log; estimate_log << 0.0101147, -7.00172e-06, 4.35662e-05, 9.10794e-06, 1.32077e-05, 1.83678e-06;
+  //Eigen::Matrix<double, 6, 1> estimate_log; estimate_log << 0.010, 0., 0., 0., 0., 0.;
+  auto estimate = liespline::expse3(estimate_log);
+  //auto estimate = liespline::Isometryd3::Identity();
 
   for(int i=1e4;i--;)
   {
+    // add points
+    while(point_error_func(*last_point, estimate) < stepangle / 3)
+      ++last_point; // .. check if exists...
+    // remove points from start
+    while(std::get<2>(*first_point) + .1 < std::get<2>(*last_point))
+      ++first_point;
+
     std::cout << liespline::logse3(estimate).transpose() << " "
-              << errorFunc(estimate)(0)
-              << std::distance(point_at_ref, last_point) << std::endl;
-    estimate = gradient_descent_step(estimate, errorFunc);
-    while(point_error_func(*last_point, estimate) < stepangle / 4)
-      ++last_point;
+              << error_func(estimate)(0) << " "
+              << first_point - point_at_ref << " "
+              << last_point - first_point << std::endl;
+    estimate = gradient_descent_step(estimate, error_func);
   }
-
-  errorFunc(estimate); // logging
-
 
   return 0;
 }

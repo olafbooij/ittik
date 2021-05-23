@@ -215,4 +215,9 @@ V-implement lm -> works quite nicely... probably overfitting...
 V-check if error is low when using oxts based pose -> 00_odo .05rad should have pose 0.0101147 -7.00172e-06  4.35662e-05  9.10794e-06  1.32077e-05  1.83678e-06 (i.e. moving forward a cm, no rotation. hmmm 1m /scan, 10m/s, 36km/h (not that fast...)) -> it is low, but not the lowest.
 V-should try moving pose, or perhaps even liespline... -> yes I think that is key
 V-should somehow contraint non-vehicle motion -> perhaps not necessary
--loop to get more points in if max error is under some limit
+V-loop to get more points in if max error is under some limit
+V-remove points in the looping
+-speed ups
+--sample X points -> (perhaps not needed when removing points...
+--vehicle motion assumption
+--less manifold
