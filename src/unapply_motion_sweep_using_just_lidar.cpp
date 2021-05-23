@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     while(point_error_func(*last_point, estimate) < stepangle / 4)
       ++last_point; // .. check if exists...
     // remove points from start
-    while(std::get<2>(*first_point) + .1 < std::get<2>(*last_point))
+    while(std::get<2>(*first_point) + .05 < std::get<2>(*last_point))
     {
       auto& [point_cloud, probeId, hori_angle] = *first_point;
       auto estimate_ = liespline::expse3(hori_angle / .05 * estimate);
