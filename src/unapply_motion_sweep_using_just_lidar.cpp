@@ -69,7 +69,9 @@ int main(int argc, char* argv[])
   auto error_func = [&first_point, &point_error_func, &last_point](auto laserPcloud)
   {
     Eigen::Vector2d error{0., 0.};
+    int i = 0;
     for(auto pointIt = first_point; pointIt != last_point; ++pointIt)
+      if(++i % 10 == 0)
     {
       auto hori_error = point_error_func(*pointIt, laserPcloud);
       error(0) += hori_error * hori_error;
@@ -87,10 +89,10 @@ int main(int argc, char* argv[])
   for(int i=1e4;i--;)
   {
     // add points
-    while(point_error_func(*last_point, estimate) < stepangle / 3)
+    while(point_error_func(*last_point, estimate) < stepangle / 4)
       ++last_point; // .. check if exists...
     // remove points from start
-    while(std::get<2>(*first_point) + .1 < std::get<2>(*last_point))
+    while(std::get<2>(*first_point) + .2 < std::get<2>(*last_point))
     {
       auto& [point_cloud, probeId, hori_angle] = *first_point;
       auto estimate_ = liespline::expse3(hori_angle / .05 * liespline::logse3(estimate));
