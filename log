@@ -217,8 +217,8 @@ V-should try moving pose, or perhaps even liespline... -> yes I think that is ke
 V-should somehow contraint non-vehicle motion -> perhaps not necessary
 V-loop to get more points in if max error is under some limit
 V-remove points in the looping
--output points before removing to check
+V-output points before removing to check
 -speed ups
---sample X points -> (perhaps not needed when removing points...
+V--sample X points -> (perhaps not needed when removing points... (%10, 6x faster)
 --vehicle motion assumption
---less manifold
+V--less manifold (1.5x faster)
