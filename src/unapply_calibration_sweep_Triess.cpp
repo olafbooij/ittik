@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
   {
     auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
-    outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << " " << std::endl;
+    outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << std::endl;
   }
   assert(sweepUncalibrator.vertId_ == 63);
 

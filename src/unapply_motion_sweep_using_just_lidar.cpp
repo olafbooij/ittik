@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 {
   using namespace ittik;
   std::ifstream sweepFile(argv[1]);
-  //std::ofstream outFile(argv[4]);
+  std::ofstream outFile(argv[2]);
 
   std::vector<std::tuple<Eigen::Vector3d, int, double>> points;
   {
@@ -91,7 +91,14 @@ int main(int argc, char* argv[])
       ++last_point; // .. check if exists...
     // remove points from start
     while(std::get<2>(*first_point) + .1 < std::get<2>(*last_point))
+    {
+      auto& [point_cloud, probeId, hori_angle] = *first_point;
+      auto estimate_ = liespline::expse3(hori_angle / .05 * liespline::logse3(estimate));
+      Eigen::Vector3d point_lidar = estimate_ * point_cloud;
+      auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
+      outFile << probeId << " " << position << " " << distanceUncor << std::endl;
       ++first_point;
+    }
 
     std::cout << liespline::logse3(estimate).transpose() << " "
               << error_func(estimate)(0) << " "
