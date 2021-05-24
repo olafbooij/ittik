@@ -222,3 +222,5 @@ V-output points before removing to check
 V--sample X points -> (perhaps not needed when removing points... (%10, 6x faster)
 --vehicle motion assumption
 V--less manifold (1.5x faster)
+-should start checking vertical angle more properly... also plotting it for 0000000003_unap
+hmmm, I should do a more local search for the pose (well... change of pose)
