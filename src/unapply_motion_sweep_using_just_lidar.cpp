@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
   auto point_error_func = [&stepangle](auto point, auto laserPcloud)
   {
     auto& [point_cloud, probeId, hori_angle] = point;
-    auto estimate = liespline::expse3(hori_angle / .05 * laserPcloud);
+    auto estimate = liespline::expse3(hori_angle * laserPcloud);
     Eigen::Vector3d point_lidar = estimate * point_cloud;
     auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
     auto hori_error = position - std::lround(position / stepangle) * stepangle;
@@ -82,8 +82,7 @@ int main(int argc, char* argv[])
   };
 
   // take points until error threshold
-  Eigen::Matrix<double, 6, 1> estimate; estimate << 0.0101147, -7.00172e-06, 4.35662e-05, 9.10794e-06, 1.32077e-05, 1.83678e-06;
-  //Eigen::Matrix<double, 6, 1> estimate; estimate << 0.010, 0., 0., 0., 0., 0.;
+  Eigen::Matrix<double, 6, 1> estimate; estimate << 0.2, 0., 0., 0., 0., 0.; // per radians
   //auto estimate = liespline::Isometryd3::Identity();
 
   for(int i=1e4;i--;)
@@ -95,7 +94,7 @@ int main(int argc, char* argv[])
     while(std::get<2>(*first_point) + .05 < std::get<2>(*last_point) && point_error_func(*first_point, estimate) < stepangle / 5)
     {
       auto& [point_cloud, probeId, hori_angle] = *first_point;
-      auto estimate_ = liespline::expse3(hori_angle / .05 * estimate);
+      auto estimate_ = liespline::expse3(hori_angle * estimate);
       Eigen::Vector3d point_lidar = estimate_ * point_cloud;
       auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
       outFile << probeId << " " << position << " " << distanceUncor << std::endl;
