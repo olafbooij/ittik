@@ -50,10 +50,12 @@ int main(int argc, char* argv[])
 
   double stepangle = 2 * M_PI / 4000;
 
-  auto point_error_func = [&stepangle](auto point, auto laserPcloud)
+  auto first_pose = liespline::Isometryd3::Identity();
+  double first_hori_angle = 0.;
+  auto point_error_func = [&stepangle, &first_pose, &first_hori_angle](auto point, auto laserPcloud)
   {
     auto& [point_cloud, probeId, hori_angle] = point;
-    auto estimate = liespline::expse3(hori_angle * laserPcloud);
+    auto estimate = first_pose * liespline::expse3((hori_angle - first_hori_angle) * laserPcloud);
     Eigen::Vector3d point_lidar = estimate * point_cloud;
     auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
     auto hori_error = position - std::lround(position / stepangle) * stepangle;
@@ -82,24 +84,26 @@ int main(int argc, char* argv[])
   };
 
   // take points until error threshold
-  Eigen::Matrix<double, 6, 1> estimate; estimate << 0.2, 0., 0., 0., 0., 0.; // per radians
+  Eigen::Matrix<double, 6, 1> estimate; estimate << 0.2, 0., 0., 0., 0., 0.; // per radians (.20m*2*pi*10*3.6 = 45km/h)
   //auto estimate = liespline::Isometryd3::Identity();
 
   for(int i=1e4;i--;)
   {
     // add points
-    while(point_error_func(*last_point, estimate) < stepangle / 4)
+    while(std::get<2>(*first_point) + .02 > std::get<2>(*last_point) && point_error_func(*last_point, estimate) < stepangle / 4)
       ++last_point; // .. check if exists...
     // remove points from start
-    while(std::get<2>(*first_point) + .05 < std::get<2>(*last_point) && point_error_func(*first_point, estimate) < stepangle / 5)
+    while(std::get<2>(*first_point) + .01 < std::get<2>(*last_point) && point_error_func(*first_point, estimate) < stepangle / 4)
     {
       auto& [point_cloud, probeId, hori_angle] = *first_point;
-      auto estimate_ = liespline::expse3(hori_angle * estimate);
+      auto estimate_ = first_pose * liespline::expse3((hori_angle - first_hori_angle) * estimate);
       Eigen::Vector3d point_lidar = estimate_ * point_cloud;
       auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
       outFile << probeId << " " << position << " " << distanceUncor << std::endl;
       ++first_point;
     }
+    first_pose = first_pose * liespline::expse3((std::get<2>(*first_point) - first_hori_angle) * estimate);
+    first_hori_angle = std::get<2>(*first_point);
 
     std::cout << estimate.transpose() << " "
               << error_func(estimate)(0) << " "
