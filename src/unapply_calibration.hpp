@@ -21,9 +21,13 @@ auto unapply_calibration(const Eigen::Vector3d point, const ProbeCalibration& ca
 
 // Function that can be used to determine if a certain point was measured by a
 // certian laser probe.
-auto vertical_angle_difference(const Eigen::Vector3d point, const ProbeCalibration& cal)
+auto vertical_angle(const Eigen::Vector3d point, const ProbeCalibration& cal)
 {
   auto distXYSquared = point(0) * point(0) + point(1) * point(1);
   auto vertCorrection = atan((point(2) - cal.vertOffsetCorrection) / sqrt(distXYSquared));
-  return cal.vertCorrection - vertCorrection;
+  return vertCorrection;
+}
+auto vertical_angle_difference(const Eigen::Vector3d point, const ProbeCalibration& cal)
+{
+  return cal.vertCorrection - vertical_angle(point, cal);
 }

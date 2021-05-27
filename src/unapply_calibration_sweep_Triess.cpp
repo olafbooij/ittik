@@ -22,7 +22,9 @@ int main(int argc, char* argv[])
   while(sweepFile >> point(0) >> point(1) >> point(2) >> refl)
   {
     auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(point);
-    outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << std::endl;
+    outFile << probeId << " " << position << " " << distanceUncor << " " << vertId_ << " "
+            << vertical_angle(point, kitti_probe_calibration().at(probeId)) << " "
+            << kitti_probe_calibration().at(probeId).vertCorrection << std::endl;
   }
   assert(sweepUncalibrator.vertId_ == 63);
 

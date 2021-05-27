@@ -5,8 +5,8 @@
 
 #include"io.hpp"
 #include"util.hpp"
-#include<unapply_calibration_sweep.hpp>
-#include<unapply_calibration_sweep_Triess.hpp>
+#include"unapply_calibration_sweep.hpp"
+#include"unapply_calibration_sweep_Triess.hpp"
 
 #include"liespline/se3_plot.hpp"
 
@@ -59,7 +59,8 @@ int main(int argc, char* argv[])
     Eigen::Vector3d point_lidar = estimate * point_cloud;
     auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
     auto hori_error = position - std::lround(position / stepangle) * stepangle;
-    return hori_error;
+    auto vert_error = vertical_angle_difference(point_lidar, kitti_probe_calibration().at(probeId));
+    return std::make_pair(hori_error, vert_error);
   };
 
   // take "middle"
@@ -73,13 +74,17 @@ int main(int argc, char* argv[])
   {
     Eigen::Vector2d error{0., 0.};
     int i = iter;
+    int n = 0;
     for(auto pointIt = first_point; pointIt != last_point; ++pointIt)
       if(++i % 10 == 0)
     {
-      auto hori_error = point_error_func(*pointIt, laserPcloud);
+      auto [hori_error, vert_error] = point_error_func(*pointIt, laserPcloud);
       error(0) += hori_error * hori_error;
+      error(1) += vert_error * vert_error;
+      ++n;
     }
-    error(0) = sqrt(error(0) / (last_point - first_point));
+    error(0) = sqrt(error(0) / n);
+    error(1) = sqrt(error(1) / n);
     return error;
   };
 
@@ -90,16 +95,19 @@ int main(int argc, char* argv[])
   for(int i=1e4;i--;)
   {
     // add points
-    while(std::get<2>(*first_point) + .02 > std::get<2>(*last_point) && point_error_func(*last_point, estimate) < stepangle / 4)
+    std::cout << point_error_func(*last_point, estimate).second << std::endl;
+    while(std::get<2>(*first_point) + .3 > std::get<2>(*last_point) && point_error_func(*last_point, estimate).first < stepangle / 4 && fabs(point_error_func(*last_point, estimate).second) < 0.02)
       ++last_point; // .. check if exists...
     // remove points from start
-    while(std::get<2>(*first_point) + .01 < std::get<2>(*last_point) && point_error_func(*first_point, estimate) < stepangle / 4)
+    while(std::get<2>(*first_point) + .1 < std::get<2>(*last_point) && point_error_func(*first_point, estimate).first < stepangle / 5 && fabs(point_error_func(*first_point, estimate).second) < 0.002)
     {
       auto& [point_cloud, probeId, hori_angle] = *first_point;
       auto estimate_ = first_pose * liespline::expse3((hori_angle - first_hori_angle) * estimate);
       Eigen::Vector3d point_lidar = estimate_ * point_cloud;
       auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
-      outFile << probeId << " " << position << " " << distanceUncor << std::endl;
+      outFile << probeId << " " << position << " " << distanceUncor << " "
+              << vertical_angle(point_lidar, kitti_probe_calibration().at(probeId)) << " "
+              << kitti_probe_calibration().at(probeId).vertCorrection << std::endl;
       ++first_point;
     }
     first_pose = first_pose * liespline::expse3((std::get<2>(*first_point) - first_hori_angle) * estimate);
@@ -107,6 +115,7 @@ int main(int argc, char* argv[])
 
     std::cout << estimate.transpose() << " "
               << error_func(estimate)(0) << " "
+              << error_func(estimate)(1) << " "
               << first_point - point_at_ref << " "
               << last_point - first_point << std::endl;
     estimate = gradient_descent_step(estimate, error_func);

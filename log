@@ -222,7 +222,10 @@ V-output points before removing to check
 V--sample X points -> (perhaps not needed when removing points... (%10, 6x faster)
 --vehicle motion assumption
 V--less manifold (1.5x faster)
--should start checking vertical angle more properly... also plotting it for 0000000003_unap
+V-should start checking vertical angle more properly... also plotting it for 0000000003_unap
+-to check vertical error bit better
+-stop using the Triess solution of finding the laser id
+
 Vhmmm, I should do a more local search for the pose (well... change of pose), 
 perhaps the pose used has a large "knick" (as in, linear interpolation) which should be modelled
 
