@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
     auto world_p_imu = interpolate_pose(poses, sweep_time, delta);
 
     auto lidar_p_lidar_ref = (world_p_imu * imu_p_lidar).inverse() * world_p_lidar_ref;
-    {static std::ofstream file("relative_poses"); file << liespline::logse3(lidar_p_lidar_ref).transpose() << " " << delta << std::endl;}
+    {static std::ofstream file("relative_poses"); file << liespline::logse3(lidar_p_lidar_ref).transpose() << " " << delta << " " << horizontalAngle << std::endl;}
     Eigen::Vector3d pointCorrected = lidar_p_lidar_ref * point;
 
     auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(pointCorrected);

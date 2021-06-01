@@ -80,9 +80,9 @@ Now to try it on a kitti scan
 
 should split of the code in a separate repo named:
 ITTIK I jusT wanT my kittI bacK -> did that
-doesn't work on kitti scan. Will try to do just one point and see what's happening, might be just some x-y conversion. 
+doesn't work on kitti scan. Will try to do just one point and see what's happening, might be just some x-y conversion.
 should also check what suma is actually doing... it should use the calibration somehow... -> no it's not taking it into account it seems.
-there's also some code in https://gist.github.com/pierriko/6bbcb287aaf23358fe0a btw, with some nice asci art 
+there's also some code in https://gist.github.com/pierriko/6bbcb287aaf23358fe0a btw, with some nice asci art
 Aha, found a buggy, was using the wrong probe ids. Now it makes more sense, but not perfect yet. seems indeed x-y conversion because lines start at about pi/2 and going down.
 Hmmm, seems the kitty xyz data is rotating anti-clockwise, while the velodyne itself is rotating clockwise. I also wonder what the orientation of the velodyne is on the car... seems a kitti-sweep start at the back of the car, but I do not know if that's also the zero-position of the velodyne. (sigh...)
 Rotating by pi/2 doesn't really help: error stays 1 to 10 mrad (though difficult to judge with high error). I wonder if the calibration is actually dependend on the rotation position...
@@ -90,7 +90,7 @@ Probe 31 is acting very strange -> and that's probably because it is aimed close
 Is the "error" actually the timing difference? -> nope, I already ordered them by probe_id = time.
 
 Let's try to get a more stable method to get the position back, perhaps iterate somehow
-Btw, checked the stability. Indeed the mm-accuracy of the lidar points has a big effect on the rotation position for close to horizon points. 
+Btw, checked the stability. Indeed the mm-accuracy of the lidar points has a big effect on the rotation position for close to horizon points.
 Implemented a hacky iterative method. Seems much better for all probes, but still position dependend position error.
 Okay, a +/- error: now the position error is independent. Can still be up to 8 mrad though
 the distance error between the point and the reprojected point is quite high: up to 5 cm
@@ -156,9 +156,9 @@ Moving to pose estimation
 should check vertical angle in the raw data -> pretty good, < 2 mrad error; well some are 6 mrad, while the difference between 2 lasers is sometimes also 6 mrad... so just not good enough to estimate probeId...
 well... perhaps those are strange outliers anyways.... should check that...
 Wow, the rotational position of the different sweeps are very much the same...
-Hmmmm.... when I paste sweep 01 after sweep 00 then they do not seem to fit, they have different different timing 
+Hmmmm.... when I paste sweep 01 after sweep 00 then they do not seem to fit, they have different different timing
 -> that's because how I unapply calibration...
--> no... also the original split does seem to fit. ...let me find the place where it's actually split. Or are sweeps missing... 
+-> no... also the original split does seem to fit. ...let me find the place where it's actually split. Or are sweeps missing...
 Let me get a motion-corrected sweep when the car is rotating, e.g. from odo-set 05: 2011_09_30_drive_0018, scan 794 or 1810
 -> the seem is at pi... so that would be where it should "fit" with the next sweep. I should try this with 1810 where it is clear where it starts and stops
 what seems to me to be the case is that the scans are split by device-rotation at some perhaps arbitrary orientation, and then saved as "point-clouds" starting from point heading 0. -> Yas, confirmed on 1810 at -pi/2 (because of my atan screwup)
@@ -223,9 +223,12 @@ V--sample X points -> (perhaps not needed when removing points... (%10, 6x faste
 --vehicle motion assumption
 V--less manifold (1.5x faster)
 V-should start checking vertical angle more properly... also plotting it for 0000000003_unap
--to check vertical error bit better
--stop using the Triess solution of finding the laser id
+V-to check vertical error bit better -> does not really help...
+X-stop using the Triess solution of finding the laser id -> perhaps not that important
 
-Vhmmm, I should do a more local search for the pose (well... change of pose), 
-perhaps the pose used has a large "knick" (as in, linear interpolation) which should be modelled
-
+Vhmmm, I should do a more local search for the pose (well... change of pose),
+Vperhaps the pose used has a large "knick" (as in, linear interpolation) which should be modelled -> not apparent in oxts
+Vcompare computed poses with the ones based on oxts
+hmmm, i should compute the heading in lidar frame, and not in cloud frame for the interpolation
+  plot "relative_poses" using 8:1, "relative_poses" using 8:2,"relative_poses" using 8:3,"relative_poses" using 8:4,"relative_poses" using 8:5,"relative_poses" using 8:6
+  replot "00_odo_unmo.txt" using 12:6, "00_odo_unmo.txt" using 12:7,"00_odo_unmo.txt" using 12:8,"00_odo_unmo.txt" using 12:9,"00_odo_unmo.txt" using 12:10,"00_odo_unmo.txt" using 12:11
