@@ -230,5 +230,9 @@ Vhmmm, I should do a more local search for the pose (well... change of pose),
 Vperhaps the pose used has a large "knick" (as in, linear interpolation) which should be modelled -> not apparent in oxts
 Vcompare computed poses with the ones based on oxts
 Vhmmm, i should compute the heading in lidar frame, and not in cloud frame for the interpolation
+Xtry three-step heading computation -> not, no real difference (empirically, should do the math...)
   plot "relative_poses" using 8:1, "relative_poses" using 8:2,"relative_poses" using 8:3,"relative_poses" using 8:4,"relative_poses" using 8:5,"relative_poses" using 8:6
   replot "00_odo_unmo.txt" using 12:6, "00_odo_unmo.txt" using 12:7,"00_odo_unmo.txt" using 12:8,"00_odo_unmo.txt" using 12:9,"00_odo_unmo.txt" using 12:10,"00_odo_unmo.txt" using 12:11
+  replot "00_odo_unmo.txt" using 12:6 with lines, "00_odo_unmo.txt" using 12:7 with lines,"00_odo_unmo.txt" using 12:8 with lines,"00_odo_unmo.txt" using 12:9 with lines,"00_odo_unmo.txt" using 12:10 with lines,"00_odo_unmo.txt" using 12:11 with lines
+hmmm, perhaps I should check the first, the last, and save the middle (after checking)
+

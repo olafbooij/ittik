@@ -57,25 +57,13 @@ int main(int argc, char* argv[])
     auto& [point_cloud, probeId, hori_angle] = point;
     auto estimate = first_pose * liespline::expse3((hori_angle - first_hori_angle) * laserPcloud);
     Eigen::Vector3d point_lidar = estimate * point_cloud;
-
-    auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
+    auto estimate_ = first_pose * liespline::expse3((atan2(point_lidar(1), point_lidar(0)) - first_hori_angle) * laserPcloud);
+    Eigen::Vector3d point_lidar_ = estimate_ * point_cloud;
+    auto [position, distanceUncor] = unapply_calibration(point_lidar_, kitti_probe_calibration().at(probeId));
     auto hori_error = position - std::lround(position / stepangle) * stepangle;
-    auto vert_error = vertical_angle_difference(point_lidar, kitti_probe_calibration().at(probeId));
+    auto vert_error = vertical_angle_difference(point_lidar_, kitti_probe_calibration().at(probeId));
     if(fabs(vert_error) > .01)
       hori_error = vert_error = 0.;
-
-    {
-      auto estimate_ = first_pose * liespline::expse3((atan2(point_lidar(1), point_lidar(0)) - first_hori_angle) * laserPcloud);
-      Eigen::Vector3d point_lidar_ = estimate_ * point_cloud;
-      auto [position, distanceUncor] = unapply_calibration(point_lidar_, kitti_probe_calibration().at(probeId));
-      auto hori_error_ = position - std::lround(position / stepangle) * stepangle;
-      auto vert_error_ = vertical_angle_difference(point_lidar_, kitti_probe_calibration().at(probeId));
-      if(fabs(vert_error_) > .01)
-        hori_error_ = vert_error_ = 0.;
-      //std::cout << "horidiff = " << hori_error - hori_error_ << std::endl;
-      hori_error = hori_error_;
-      vert_error = vert_error_;
-    }
 
     return std::make_pair(hori_error, vert_error);
   };
@@ -118,7 +106,7 @@ int main(int argc, char* argv[])
       ++last_point; // .. check if exists...
     auto prev_first_point = first_point;
     // remove points from start
-    while(std::get<2>(*first_point) + .1 < std::get<2>(*last_point) && point_error_func(*first_point, estimate).first < stepangle / 4 && fabs(point_error_func(*first_point, estimate).second) < 0.006)
+    while(std::get<2>(*first_point) + .1 < std::get<2>(*last_point) && point_error_func(*first_point, estimate).first < stepangle / 3 && fabs(point_error_func(*first_point, estimate).second) < 0.006)
 
 
     {
