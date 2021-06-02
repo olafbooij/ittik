@@ -57,11 +57,26 @@ int main(int argc, char* argv[])
     auto& [point_cloud, probeId, hori_angle] = point;
     auto estimate = first_pose * liespline::expse3((hori_angle - first_hori_angle) * laserPcloud);
     Eigen::Vector3d point_lidar = estimate * point_cloud;
+
     auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
     auto hori_error = position - std::lround(position / stepangle) * stepangle;
     auto vert_error = vertical_angle_difference(point_lidar, kitti_probe_calibration().at(probeId));
     if(fabs(vert_error) > .01)
       hori_error = vert_error = 0.;
+
+    {
+      auto estimate_ = first_pose * liespline::expse3((atan2(point_lidar(1), point_lidar(0)) - first_hori_angle) * laserPcloud);
+      Eigen::Vector3d point_lidar_ = estimate_ * point_cloud;
+      auto [position, distanceUncor] = unapply_calibration(point_lidar_, kitti_probe_calibration().at(probeId));
+      auto hori_error_ = position - std::lround(position / stepangle) * stepangle;
+      auto vert_error_ = vertical_angle_difference(point_lidar_, kitti_probe_calibration().at(probeId));
+      if(fabs(vert_error_) > .01)
+        hori_error_ = vert_error_ = 0.;
+      //std::cout << "horidiff = " << hori_error - hori_error_ << std::endl;
+      hori_error = hori_error_;
+      vert_error = vert_error_;
+    }
+
     return std::make_pair(hori_error, vert_error);
   };
 
@@ -99,14 +114,18 @@ int main(int argc, char* argv[])
     // add points
     std::cout << std::get<0>(*first_point).transpose() << " " << point_error_func(*first_point, estimate).first << " " << point_error_func(*first_point, estimate).second << " "
               << std::get<0>(*last_point).transpose() << " " << point_error_func(*last_point, estimate ).first << " " << point_error_func(*last_point, estimate ).second << " ";
-    while(std::get<2>(*first_point) + .11 > std::get<2>(*last_point) && point_error_func(*last_point, estimate).first < stepangle / 4 && fabs(point_error_func(*last_point, estimate).second) < 0.004)
+    while(std::get<2>(*first_point) + .14 > std::get<2>(*last_point) && point_error_func(*last_point, estimate).first < stepangle / 3 && fabs(point_error_func(*last_point, estimate).second) < 0.006)
       ++last_point; // .. check if exists...
     auto prev_first_point = first_point;
     // remove points from start
-    while(std::get<2>(*first_point) + .1 < std::get<2>(*last_point) && point_error_func(*first_point, estimate).first < stepangle / 5 && fabs(point_error_func(*first_point, estimate).second) < 0.004)
+    while(std::get<2>(*first_point) + .1 < std::get<2>(*last_point) && point_error_func(*first_point, estimate).first < stepangle / 4 && fabs(point_error_func(*first_point, estimate).second) < 0.006)
+
+
     {
       auto& [point_cloud, probeId, hori_angle] = *first_point;
-      auto estimate_ = first_pose * liespline::expse3((hori_angle - first_hori_angle) * estimate);
+      auto estimate__ = first_pose * liespline::expse3((hori_angle - first_hori_angle) * estimate);
+      Eigen::Vector3d point_lidar_ = estimate__ * point_cloud;
+      auto estimate_ = first_pose * liespline::expse3((atan2(point_lidar_(1), point_lidar_(0)) - first_hori_angle) * estimate);
       Eigen::Vector3d point_lidar = estimate_ * point_cloud;
       auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
       outFile << probeId << " " << position << " " << distanceUncor << " "
@@ -126,23 +145,63 @@ int main(int argc, char* argv[])
               << last_point - first_point << " ";
     std::cout << std::endl;
     ++iter;
-    if(first_point - prev_first_point == 0) break; // UUUUUU
+    estimate = gradient_descent_step(estimate, error_func);
+
+    { // UUUUUU
+      static int derail = 0;
+      if(first_point - prev_first_point == 0)
+        ++derail;
+      else
+        derail = 0;
+     if(derail == 10) break;
+    }
   }
 
   std::ofstream outFile_("00_odo_unmo_all.txt");
   for(auto& point: points)
   {
-      auto& [point_cloud, probeId, hori_angle] = point;
-      auto estimate_ = first_pose * liespline::expse3((hori_angle - first_hori_angle) * estimate);
-      Eigen::Vector3d point_lidar = estimate_ * point_cloud;
-      auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
-      outFile_ << probeId << " " << position << " " << distanceUncor << " "
-              << vertical_angle(point_lidar, kitti_probe_calibration().at(probeId)) << " "
-              << kitti_probe_calibration().at(probeId).vertCorrection << " "
-              << liespline::logse3(estimate_).transpose() << " "
-              << hori_angle << std::endl;
+    auto& [point_cloud, probeId, hori_angle] = point;
+    auto estimate__ = first_pose * liespline::expse3((hori_angle - first_hori_angle) * estimate);
+    Eigen::Vector3d point_lidar_ = estimate__ * point_cloud;
+    auto estimate_ = first_pose * liespline::expse3((atan2(point_lidar_(1), point_lidar_(0)) - first_hori_angle) * estimate);
+    Eigen::Vector3d point_lidar = estimate_ * point_cloud;
+    auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
+    outFile_ << probeId << " " << position << " " << distanceUncor << " "
+            << vertical_angle(point_lidar, kitti_probe_calibration().at(probeId)) << " "
+            << kitti_probe_calibration().at(probeId).vertCorrection << " "
+            << liespline::logse3(estimate_).transpose() << " "
+            << hori_angle << std::endl;
   }
-
+  {
+    std::ofstream outFile_("00_odo_unmo_last.txt");
+    auto& [point_cloud, probeId, hori_angle] = *last_point;
+    auto estimate__ = first_pose * liespline::expse3((hori_angle - first_hori_angle) * estimate);
+    Eigen::Vector3d point_lidar_ = estimate__ * point_cloud;
+    auto estimate_ = first_pose * liespline::expse3((atan2(point_lidar_(1), point_lidar_(0)) - first_hori_angle) * estimate);
+    Eigen::Vector3d point_lidar = estimate_ * point_cloud;
+    auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
+    outFile_ << probeId << " " << position << " " << distanceUncor << " "
+            << vertical_angle(point_lidar, kitti_probe_calibration().at(probeId)) << " "
+            << kitti_probe_calibration().at(probeId).vertCorrection << " "
+            << liespline::logse3(estimate_).transpose() << " "
+            << hori_angle << std::endl;
+  }
+  {
+    std::ofstream outFile_("00_odo_unmo_first.txt");
+    auto& [point_cloud, probeId, hori_angle] = *first_point;
+    auto estimate__ = first_pose * liespline::expse3((hori_angle - first_hori_angle) * estimate);
+    Eigen::Vector3d point_lidar_ = estimate__ * point_cloud;
+    auto estimate_ = first_pose * liespline::expse3((atan2(point_lidar_(1), point_lidar_(0)) - first_hori_angle) * estimate);
+    Eigen::Vector3d point_lidar = estimate_ * point_cloud;
+    auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(probeId));
+    outFile_ << probeId << " " << position << " " << distanceUncor << " "
+            << vertical_angle(point_lidar, kitti_probe_calibration().at(probeId)) << " "
+            << kitti_probe_calibration().at(probeId).vertCorrection << " "
+            << liespline::logse3(estimate_).transpose() << " "
+            << hori_angle << std::endl;
+  }
+  std::cout << first_point - point_at_ref << " "
+            << last_point - point_at_ref << std::endl;
 
 
   return 0;
