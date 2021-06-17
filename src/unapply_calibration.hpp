@@ -19,26 +19,15 @@ auto unapply_calibration(const Eigen::Vector3d point, const ProbeCalibration& ca
   return std::pair{position, distanceUncor};
 }
 
-auto vertical_angle_difference(const Eigen::Vector3d point, const ProbeCalibration& cal)
+// Function that can be used to determine if a certain point was measured by a
+// certian laser probe.
+auto vertical_angle(const Eigen::Vector3d point, const ProbeCalibration& cal)
 {
   auto distXYSquared = point(0) * point(0) + point(1) * point(1);
   auto vertCorrection = atan((point(2) - cal.vertOffsetCorrection) / sqrt(distXYSquared));
-  return cal.vertCorrection - vertCorrection;
+  return vertCorrection;
 }
-
-auto unapply_calibration_unknown_laser(const Eigen::Vector3d point, const Calibration& cals)
+auto vertical_angle_difference(const Eigen::Vector3d point, const ProbeCalibration& cal)
 {
-  auto distXYSquared = point(0) * point(0) + point(1) * point(1);
-  // pick closest calibration
-  auto calp = (std::min_element(cals.begin(), cals.end(), [&point, &distXYSquared](auto calA, auto calB){
-    auto vertCorrectionA = atan((point(2) - calA.vertOffsetCorrection) / sqrt(distXYSquared));
-    auto vertCorrectionB = atan((point(2) - calB.vertOffsetCorrection) / sqrt(distXYSquared));
-    return fabs(calA.vertCorrection - vertCorrectionA) < fabs(calB.vertCorrection - vertCorrectionB);}));
-  auto cal = *calp;
-  // should check if the result is significant. If not, then it's probably some
-  // sort of spurious measurement, which does not have a specific semantic label
-  //assert(fabs(cal.vertCorrection - vertCorrection) <
-  auto distanceUncor = sqrt(distXYSquared - cal.horizOffsetCorrection * cal.horizOffsetCorrection) / cos(cal.vertCorrection) - cal.distCorrection;
-  auto position = atan2(point(0), point(1)) + atan2(cal.horizOffsetCorrection, sqrt(distXYSquared)) + cal.rotCorrection;
-  return std::tuple{position, distanceUncor, calp - cals.begin()};
+  return cal.vertCorrection - vertical_angle(point, cal);
 }

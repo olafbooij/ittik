@@ -16,9 +16,11 @@ int main(int argc, char* argv[])
   std::ifstream semanticsFile(argv[2], std::ios::in | std::ios::binary);
   std::ofstream ppmFile(argv[3]);
 
-  Eigen::MatrixXi imageR(64, 2282); imageR.setZero();
-  Eigen::MatrixXi imageG(64, 2282); imageG.setZero();
-  Eigen::MatrixXi imageB(64, 2282); imageB.setZero();
+  const int image_width = 2300;
+
+  Eigen::MatrixXi imageR(64, image_width); imageR.setZero();
+  Eigen::MatrixXi imageG(64, image_width); imageG.setZero();
+  Eigen::MatrixXi imageB(64, image_width); imageB.setZero();
   while(coordsFile.good() && !coordsFile.eof())
   {
     auto readunint16 = [](auto& file){
@@ -28,7 +30,7 @@ int main(int argc, char* argv[])
     };
     auto x = readunint16(coordsFile);
     auto y = readunint16(coordsFile);
-    assert(x < 2282);
+    assert(x < image_width);
     assert(semanticsFile.good());
     auto semantic = readunint16(semanticsFile);
     auto instance = readunint16(semanticsFile);

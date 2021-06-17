@@ -84,10 +84,11 @@ int main(int argc, char* argv[])
   {
     // correct point ...
     double horizontalAngle = atan2(point(1), point(0));
-    auto delta = 1 - (horizontalAngle + M_PI) / (2 * M_PI); // I do not understand this 1 - ...
+    auto delta = 1 - (horizontalAngle + M_PI) / (2 * M_PI); // I do not understand this 1- .... probably I'm mirroring...
     auto world_p_imu = interpolate_pose(poses, sweep_time, delta);
 
     auto lidar_p_lidar_ref = (world_p_imu * imu_p_lidar).inverse() * world_p_lidar_ref;
+    {static std::ofstream file("relative_poses"); file << liespline::logse3(lidar_p_lidar_ref).transpose() << " " << delta << " " << horizontalAngle << std::endl;}
     Eigen::Vector3d pointCorrected = lidar_p_lidar_ref * point;
 
     auto [probeId, position, distanceUncor, vertId_] = sweepUncalibrator(pointCorrected);

@@ -17,79 +17,31 @@ auto determine_probe_order(const Calibration calibration)
 }
 
 // This helper class should be fed with points in the order as stored in the
-// KITTI dataset. The probe number for each point can then be simply determined
-// as described in:
-// "Scan-based semantic segmentation of lidar point clouds: An experimental study",
-// Triess, L.T., Peter, D., Rist, C.B., Zöllner, J.M., arXiv preprint arXiv:2004.11803 
+// KITTI dataset. The laser probe id is determined by  using the vertical
+// measurement angle.
 struct SweepUncalibrator
 {
   int vertId_;
-  double horizontalAnglePrev_;
   std::array<std::size_t, 64> probeOrder_;
   SweepUncalibrator() :
     vertId_(0),
-    horizontalAnglePrev_(0),
     probeOrder_(determine_probe_order(kitti_probe_calibration()))
   {}
 
-  auto read(const Eigen::Vector3d& point)
+  auto get_probeId(const Eigen::Vector3d& point)
   {
-    double horizontalAngle = atan2(point(1), point(0));
-    if(horizontalAngle < 0)
-      horizontalAngle += 2 * M_PI;
-    if(horizontalAngle + .5 < horizontalAnglePrev_)  // the + .5 is just for rebustness needed for motion corrected data
-        ++vertId_;
-    horizontalAnglePrev_ = horizontalAngle;
+    while(vertical_angle_difference(point, kitti_probe_calibration().at(probeOrder_.at(vertId_))) > .002)
+    {
+      ++vertId_;
+      assert(vertId_ < 64);
+    }
     return probeOrder_.at(vertId_);
   }
-
   auto operator()(const Eigen::Vector3d& point)
   {
-    auto probeId = read(point);
+    auto probeId = get_probeId(point);
     auto [position, distanceUncor] = unapply_calibration(point, kitti_probe_calibration().at(probeId));
     return std::make_tuple(probeId, position, distanceUncor, vertId_);
   }
 };
-
-
-// an attempt to get a better horizontal angle, respecting start and end
-// but I wonder if this is useful / correct ...
-struct SweepUncalibrator_proper_horizontal_angle
-{
-  int vertId_;
-  int probeIdPrev_;
-  double horizontalAnglePrev_;
-  double positionPrev_;
-  std::array<std::size_t, 64> probeOrder_;
-  SweepUncalibrator_proper_horizontal_angle() :
-    vertId_(0),
-    probeIdPrev_(0),
-    horizontalAnglePrev_(0),
-    positionPrev_(0),
-    probeOrder_(determine_probe_order(kitti_probe_calibration()))
-  {}
-
-  auto read(const Eigen::Vector3d& point)
-  {
-    double horizontalAngle = atan2(point(1), point(0));
-    if(horizontalAngle < 0)
-      horizontalAngle += 2 * M_PI;
-    if(horizontalAngle + M_PI < horizontalAnglePrev_)  // the + M_PI is just for rebustness needed for motion corrected data
-      ++vertId_;
-    horizontalAnglePrev_ = horizontalAngle;
-    return probeOrder_.at(vertId_);
-  }
-
-  auto operator()(const Eigen::Vector3d& point)
-  {
-    auto [position, distanceUncor, probeId] = unapply_calibration_unknown_laser(point, kitti_probe_calibration());
-    if(probeId == probeIdPrev_)
-      if(position > positionPrev_ + 1)
-        position -= 2 * M_PI;
-    probeIdPrev_ = probeId;
-    positionPrev_ = position;
-    return std::make_tuple(probeId, position, distanceUncor, vertId_);
-  }
-};
-
 
