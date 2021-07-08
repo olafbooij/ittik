@@ -8,33 +8,35 @@ int main(int argc, char* argv[])
 {
   using namespace ittik;
 
-  std::ifstream coordsFile(argv[1], std::ios::in | std::ios::binary);
+  std::ifstream unapFile(argv[1]);
   std::ifstream sweepFile(argv[2]);
   std::ofstream ppmFile(argv[3]);
 
   Eigen::MatrixXi imageR(64, 2282); imageR.setZero();
   Eigen::MatrixXi imageG(64, 2282); imageG.setZero();
   Eigen::MatrixXi imageB(64, 2282); imageB.setZero();
-  while(coordsFile.good() && !coordsFile.eof())
+  int probeId, vertId;
+  double position, dist;
+  std::size_t overlap = 0;
+  while(unapFile >> probeId >> position >> dist >> vertId)
   {
-    auto readunint16 = [](auto& file){
-      uint16_t var;
-      file.read(reinterpret_cast<char*>(&var), sizeof(var));
-      return var;
-    };
-    auto x = 2281 - readunint16(coordsFile);
-    auto y = readunint16(coordsFile);
-    assert(x < 2282);
     assert(sweepFile.good());
     Eigen::Vector3d point;
     double refl;
     sweepFile >> point(0) >> point(1) >> point(2) >> refl;
 
+    int y = vertId;
+    int x = 2099 - static_cast<int>(floor((atan2(point(1), point(0)) / (2 * M_PI) + .5) * 2100));
+    assert(x < 2282);
+
     double range = 1 - 3 / point.norm();
     imageR(y, x) = static_cast<int>(floor(255 * sqrt(range)));
     imageG(y, x) = static_cast<int>(floor(255 * pow(range, 3)));
     imageB(y, x) = static_cast<int>(floor(255 * sin(2*M_PI * range)));
+
+    if(imageR(y, x)) ++overlap;
   }
+  std::cout << overlap << std::endl;
   write_ppm(imageR,
             imageG,
             imageB, ppmFile);
