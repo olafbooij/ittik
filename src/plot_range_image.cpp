@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
       file.read(reinterpret_cast<char*>(&var), sizeof(var));
       return var;
     };
-    auto x = readunint16(coordsFile);
+    auto x = 2281 - readunint16(coordsFile);
     auto y = readunint16(coordsFile);
     assert(x < 2282);
     assert(sweepFile.good());
