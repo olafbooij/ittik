@@ -94,7 +94,9 @@ int main(int argc, char* argv[])
   };
 
   // take points until error threshold
-  Eigen::Matrix<double, 6, 1> estimate; estimate << 0.2, 0., 0., 0., 0., 0.; // per radians (.20m*2*pi*10*3.6 = 45km/h)
+  //Eigen::Matrix<double, 6, 1> estimate; estimate << 0.2, 0., 0., 0., 0., 0.; // per radians (.20m*2*pi*10*3.6 = 45km/h)
+  Eigen::Matrix<double, 6, 1> estimate; estimate << 0.15, 0., 0., 0., 0., 0.;
+  //Eigen::Matrix<double, 6, 1> estimate; estimate << 0.199166, 9.79845e-06, -7.11455e-04, -1.24506e-04, 0.00299908, 3.73258e-04; // one of the runs
   //auto estimate = liespline::Isometryd3::Identity();
 
   for(int i=1e4;i--;)
@@ -102,13 +104,11 @@ int main(int argc, char* argv[])
     // add points
     std::cout << std::get<0>(*first_point).transpose() << " " << point_error_func(*first_point, estimate).first << " " << point_error_func(*first_point, estimate).second << " "
               << std::get<0>(*last_point).transpose() << " " << point_error_func(*last_point, estimate ).first << " " << point_error_func(*last_point, estimate ).second << " ";
-    while(std::get<2>(*first_point) + .14 > std::get<2>(*last_point) && point_error_func(*last_point, estimate).first < stepangle / 3 && fabs(point_error_func(*last_point, estimate).second) < 0.006)
+    while(std::get<2>(*first_point) + .6 > std::get<2>(*last_point) && point_error_func(*last_point, estimate).first < stepangle / 3 && fabs(point_error_func(*last_point, estimate).second) < 0.006)
       ++last_point; // .. check if exists...
     auto prev_first_point = first_point;
     // remove points from start
-    while(std::get<2>(*first_point) + .1 < std::get<2>(*last_point) && point_error_func(*first_point, estimate).first < stepangle / 3 && fabs(point_error_func(*first_point, estimate).second) < 0.006)
-
-
+    while(std::get<2>(*first_point) + .3 < std::get<2>(*last_point) && point_error_func(*first_point, estimate).first < stepangle / 3 && fabs(point_error_func(*first_point, estimate).second) < 0.006)
     {
       auto& [point_cloud, probeId, hori_angle] = *first_point;
       auto estimate__ = first_pose * liespline::expse3((hori_angle - first_hori_angle) * estimate);

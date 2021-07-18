@@ -218,7 +218,7 @@ V-should somehow contraint non-vehicle motion -> perhaps not necessary
 V-loop to get more points in if max error is under some limit
 V-remove points in the looping
 V-output points before removing to check
--speed ups
+V-speed ups
 V--sample X points -> (perhaps not needed when removing points... (%10, 6x faster)
 --vehicle motion assumption
 V--less manifold (1.5x faster)
@@ -231,8 +231,9 @@ Vperhaps the pose used has a large "knick" (as in, linear interpolation) which s
 Vcompare computed poses with the ones based on oxts
 Vhmmm, i should compute the heading in lidar frame, and not in cloud frame for the interpolation
 Xtry three-step heading computation -> not, no real difference (empirically, should do the math...)
-  plot "relative_poses" using 8:1, "relative_poses" using 8:2,"relative_poses" using 8:3,"relative_poses" using 8:4,"relative_poses" using 8:5,"relative_poses" using 8:6
+  plot "relative_poses" using 8:1 with lines, "relative_poses" using 8:2 with lines,"relative_poses" using 8:3 with lines,"relative_poses" using 8:4 with lines,"relative_poses" using 8:5 with lines,"relative_poses" using 8:6 with lines
   replot "00_odo_unmo.txt" using 12:6, "00_odo_unmo.txt" using 12:7,"00_odo_unmo.txt" using 12:8,"00_odo_unmo.txt" using 12:9,"00_odo_unmo.txt" using 12:10,"00_odo_unmo.txt" using 12:11
   replot "00_odo_unmo.txt" using 12:6 with lines, "00_odo_unmo.txt" using 12:7 with lines,"00_odo_unmo.txt" using 12:8 with lines,"00_odo_unmo.txt" using 12:9 with lines,"00_odo_unmo.txt" using 12:10 with lines,"00_odo_unmo.txt" using 12:11 with lines
 hmmm, perhaps I should check the first, the last, and save the middle (after checking)
-
+it's still pretty shaky. just gradient descent does not work
+Vwhy is there so much jitter per point?... I think just numerical instability with logse3-ing etc

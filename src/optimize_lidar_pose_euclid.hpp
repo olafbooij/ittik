@@ -21,11 +21,11 @@ namespace ittik {
 
     //const double step_size = 1e-5;
     //auto delta = (step_size * jacobian * current_error).eval();
-    //return estimate * liespline::expse3(-delta);
+    //return estimate - delta;
     ////gaus newton
     //Eigen::JacobiSVD<Eigen::MatrixXd> svd((jacobian * jacobian.transpose()).eval(), Eigen::ComputeThinU | Eigen::ComputeThinV);
     //auto delta = svd.solve(jacobian * current_error).eval();
-    //return estimate * liespline::expse3(-delta);
+    //return estimate - delta;
 
     //levenberg_marquardt
     double lambda = 1e-9; // para
