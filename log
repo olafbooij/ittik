@@ -237,3 +237,7 @@ Xtry three-step heading computation -> not, no real difference (empirically, sho
 hmmm, perhaps I should check the first, the last, and save the middle (after checking)
 it's still pretty shaky. just gradient descent does not work
 Vwhy is there so much jitter per point?... I think just numerical instability with logse3-ing etc
+
+Let me investigate the applied poses more properly by estimating based on raw and corrected data
+
+For estimating, let me try to use a more global error function based on neighboring points with approx the same distance measure
