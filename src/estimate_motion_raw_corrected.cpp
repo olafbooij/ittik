@@ -40,28 +40,15 @@ int main(int argc, char* argv[])
   const auto corrected_sweep = readSweep(corrected_sweep_file);
   assert(corrected_sweep.size() == raw_sweep.size());
 
-  auto write_sweeps = [](auto raw_sweep, auto corrected_sweep, auto laserPcloud)
-  {
-    std::ofstream file("raw_corrected");
-    for(int point_i = 0; point_i < raw_sweep.size(); ++point_i)
-    if(point_i % 100 == 0)
-    {
-      auto& [raw_point_cloud, raw_probeId, raw_hori_angle] = raw_sweep.at(point_i);
-      auto estimate = liespline::expse3(raw_hori_angle * laserPcloud);
-      Eigen::Vector3d raw_point_lidar = estimate * raw_point_cloud;
-      file << (raw_point_lidar - std::get<0>(corrected_sweep.at(point_i))).transpose() << std::endl;
-    }
-  };
-
   // define error between corresponding points given pose-spline (don't even have to bother with calibration)
   // iteratively estimate
   auto point_error_func = [](auto raw_point, auto corrected_point, auto laserPcloud)
   {
-    auto& [raw_point_cloud, raw_probeId, raw_hori_angle] = raw_point;
+    auto& [raw_point_lidar, raw_probeId, raw_hori_angle] = raw_point;
     auto estimate = liespline::expse3(raw_hori_angle * laserPcloud);
     auto& [corrected_point_cloud, corrected_probeId, corrected_hori_angle] = corrected_point;
-    Eigen::Vector3d raw_point_lidar = estimate * raw_point_cloud;
-    Eigen::Vector3d error = corrected_point_cloud - raw_point_lidar;
+    Eigen::Vector3d corrected_point_lidar = estimate * corrected_point_cloud;
+    Eigen::Vector3d error = corrected_point_lidar - raw_point_lidar;
     return error;
   };
   auto error_func = [&raw_sweep, &corrected_sweep, &point_error_func](auto laserPcloud)
@@ -80,9 +67,17 @@ int main(int argc, char* argv[])
     return error;
   };
 
+  auto write_sweeps = [&raw_sweep, &corrected_sweep, &point_error_func](auto laserPcloud)
+  {
+    std::ofstream file("raw_corrected");
+    for(int point_i = 0; point_i < raw_sweep.size(); ++point_i)
+      if(point_i % 100 == 0)
+        file << point_error_func(raw_sweep.at(point_i), corrected_sweep.at(point_i), laserPcloud).transpose() << std::endl;
+  };
+
   //auto estimate = liespline::Isometryd3::Identity();
-  Eigen::Matrix<double, 6, 1> estimate; estimate << -0.200362, 0.000649443,  -0.00181078, -0.000137006, -0.000205667, -3.21881e-05;
-  write_sweeps(raw_sweep, corrected_sweep, estimate);
+  Eigen::Matrix<double, 6, 1> estimate; estimate << 0.200362, -0.000649443,  0.00181078, 0.000137006, 0.000205667, 3.21881e-05;
+  write_sweeps(estimate);
   for(int i=1e4;i--;)
   {
     estimate = gradient_descent_step(estimate, error_func);

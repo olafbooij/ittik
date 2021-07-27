@@ -242,5 +242,6 @@ Let me investigate the applied poses more properly by estimating based on raw an
 -> wow, for 2011_09_30_drive_0016_extract 0000000003.txt, just a single pose gives exact estimates: error < 5e-5 (in x-y plane, in z it is a <2e-4
    this is due to the corrected point cloud precision which is 1e-4
    this probably also means that the motion correction was applied on the 1e-3 precise raw data
+- check uncalib
 
 For estimating, let me try to use a more global error function based on neighboring points with approx the same distance measure
