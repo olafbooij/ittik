@@ -71,8 +71,9 @@ int main(int argc, char* argv[])
   {
     std::ofstream file("raw_corrected");
     for(int point_i = 0; point_i < raw_sweep.size(); ++point_i)
-      if(point_i % 100 == 0)
-        file << point_error_func(raw_sweep.at(point_i), corrected_sweep.at(point_i), laserPcloud).transpose() << std::endl;
+      //if(point_i % 100 == 0)
+        //file << point_error_func(raw_sweep.at(point_i), corrected_sweep.at(point_i), laserPcloud).transpose() << std::endl;
+        file << (point_error_func(raw_sweep.at(point_i), corrected_sweep.at(point_i), laserPcloud) + std::get<0>(raw_sweep.at(point_i))).transpose() << " 0" << std::endl;
   };
 
   //auto estimate = liespline::Isometryd3::Identity();
