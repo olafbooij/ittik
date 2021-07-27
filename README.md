@@ -12,4 +12,4 @@ It is clear that the right is easier to discretize and use in a standard convolu
 
 Next up is reverting the motion correction used in most of the KITTI benchmarks.
 
-The code is not that readable (sorry...) and uses some c++20 features (I used GCC 8.3.0 with `-std=c++2a`).
+The code is not that readable (sorry...) and uses some c++20 features (I used GCC 8.3.0 with `-std=c++2a -fconcepts`).
