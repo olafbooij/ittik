@@ -126,9 +126,10 @@ int main(int argc, char* argv[])
   //Eigen::Matrix<double, 6, 1> estimate; estimate << 0.200362, -0.000649443,  0.00181078, 0.000137006, 0.000205667, 3.21881e-05;
   Eigen::Matrix<double, 6, 1> estimate; estimate << 0., 0., 0., 0., 0., 0.;
   write_sweeps(estimate);
-  for(int i=1e4;i--;)
+  for(int i=1e3;i--;)
   {
-    estimate = gradient_descent_step(estimate, error_func);
+    //estimate = gradient_descent_step(estimate, error_func);
+    estimate = gradient_descent_step(estimate, delta_error_func);
     //if(i%20 == 0)
     std::cout << delta_error_func(estimate)(0) << " ";
     std::cout << error_func(estimate)(0) << " " << estimate.transpose() << std::endl;
