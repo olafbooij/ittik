@@ -246,17 +246,13 @@ V-> wow, for 2011_09_30_drive_0016_extract 0000000003.txt, just a single pose gi
 V- check uncalib -> checked
 
 For estimating, let me try to use a more global error function based on neighboring points with approx the same distance measure
-V-define the error
-V-> looking at plots of gaps in raw data, it doesn't look that consistent... uniform noise between 0.0030 and 0.00327 radians. still error is vissible, but perhaps not in all scenes (e.g. driving slower).
+-define the error
+-> looking at plots of gaps in raw data, it doesn't look that consistent... uniform noise between 0.0030 and 0.00327 radians. still error is vissible, but perhaps not in all scenes (e.g. driving slower).
 -> a well, it is uniform, so the more points you use, the more signal you get
--> check neighbors being used
+  -> check out other scenes
+    #paste uncalibrated odo scans and raw scans (should write a one liner)
+    plot "tmp/00_odo_un.txt" using 2:($2-$6)
+    replot "tmp/00_raw_un.txt" using 2:($2-$6)
 
--> check out other scenes
-  #paste uncalibrated odo scans and raw scans (should write a one liner)
-  plot "tmp/00_odo_un.txt" using 2:($2-$6)
-  replot "tmp/00_raw_un.txt" using 2:($2-$6)
-
-
-V-check error in example
-V-...minimize
-  -> get's stuck quite quickly with just neighboring points
+-check error in example
+-...minimize
