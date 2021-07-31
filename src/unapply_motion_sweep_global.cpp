@@ -80,10 +80,11 @@ int main(int argc, char* argv[])
   // error. (...could results in outliers...)
   auto delta_error_func = [&corrected_sweep](auto laserPcloud)
   {
+    double first_position = 0;
     double prev_position = 0;
     double prev_distanceUncor = 0;
-    double prev_delta = 0;
-    int okay = 0;
+    //double prev_delta = 0;
+    int okay = 1;
     Eigen::Vector2d error{0., 0.};
     int n = 0;
     for(auto point: corrected_sweep)
@@ -94,21 +95,33 @@ int main(int argc, char* argv[])
       Eigen::Vector3d point_lidar = estimate * point.point;
       auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(point.probeId));
       auto delta = position - prev_position;
+      auto aver_delta = (prev_position - first_position) / okay;
+      // TODO add a check for .5 or 2x difference
       if((fabs(distanceUncor - prev_distanceUncor) > .05) ||
-         (fabs(delta - prev_delta) > .001)) // bit of a though one, should maybe make it smaller at the cost of inliers
-        okay = 0;
+         // TODO make the tolerance dependent on the ammount of support (size of okay)
+         (fabs(delta - aver_delta) > .001)) // bit of a though one, should maybe make it smaller at the cost of inliers
+      {
+        okay = 1;
+        first_position = prev_position;
+      }
       else
         ++okay;
       prev_position = position;
       prev_distanceUncor = distanceUncor;
-      prev_delta = delta;
 
-      if(okay > 1)
+      if(okay > 2)
       {
         ++n;
-        error(0) += pow(delta - M_PI / 1000, 2);
+        error(0) += pow((position - first_position)/okay  - M_PI / 1000, 2);
+
+
+        //{
+        //  static std::ofstream file("points_in_error");
+        //  file << point.point.transpose() << std::endl;
+        //}
       }
     }
+    std::cout << n << std::endl;
     if(n)
       error(0) = sqrt(error(0) / n);
     return error;
@@ -125,10 +138,11 @@ int main(int argc, char* argv[])
 
   //Eigen::Matrix<double, 6, 1> estimate; estimate << 0.200362, -0.000649443,  0.00181078, 0.000137006, 0.000205667, 3.21881e-05;
   Eigen::Matrix<double, 6, 1> estimate; estimate << 0., 0., 0., 0., 0., 0.;
-  write_sweeps(estimate);
-  for(int i=1e4;i--;)
+  //write_sweeps(estimate);
+  for(int i=1e3;i--;)
   {
-    estimate = gradient_descent_step(estimate, error_func);
+    //estimate = gradient_descent_step(estimate, error_func);
+    estimate = gradient_descent_step(estimate, delta_error_func);
     //if(i%20 == 0)
     std::cout << delta_error_func(estimate)(0) << " ";
     std::cout << error_func(estimate)(0) << " " << estimate.transpose() << std::endl;
