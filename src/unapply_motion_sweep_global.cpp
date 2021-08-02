@@ -83,16 +83,14 @@ int main(int argc, char* argv[])
     double prev_position = 0;
     double prev_distanceUncor = 0;
     double prev_delta = 0;
+    auto prev_point = corrected_sweep.front();
     int okay = 0;
     Eigen::Vector2d error{0., 0.};
     int n = 0;
     for(auto point: corrected_sweep)
     {
-      auto estimate0 = liespline::expse3(point.hori_angle * laserPcloud);
-      Eigen::Vector3d point_lidar0 = estimate0 * point.point;
-      auto estimate = liespline::expse3(atan2(point_lidar0(1), point_lidar0(0)) * laserPcloud);
-      Eigen::Vector3d point_lidar = estimate * point.point;
-      auto [position, distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(point.probeId));
+      // determine correspondences based on original cloud
+      auto [position, distanceUncor] = unapply_calibration(point.point, kitti_probe_calibration().at(point.probeId));
       auto delta = position - prev_position;
       if((fabs(distanceUncor - prev_distanceUncor) > .05) ||
          (fabs(delta - prev_delta) > .001)) // bit of a though one, should maybe make it smaller at the cost of inliers
@@ -105,10 +103,26 @@ int main(int argc, char* argv[])
 
       if(okay > 1)
       {
+        // get updated cloud
+        auto get_updated_position = [&laserPcloud](auto& point)
+        {
+          auto estimate0 = liespline::expse3(point.hori_angle * laserPcloud);
+          Eigen::Vector3d point_lidar0 = estimate0 * point.point;
+          auto estimate = liespline::expse3(atan2(point_lidar0(1), point_lidar0(0)) * laserPcloud);
+          Eigen::Vector3d point_lidar = estimate * point.point;
+          auto [position, _distanceUncor] = unapply_calibration(point_lidar, kitti_probe_calibration().at(point.probeId));
+          return position;
+        };
+
+        auto position_up = get_updated_position(point);
+        auto prev_position_up = get_updated_position(prev_point);
+
         ++n;
-        error(0) += pow(delta - M_PI / 1000, 2);
+        error(0) += pow((position_up - prev_position_up) - M_PI / 1000, 2);
       }
+      prev_point = point;
     }
+    //std::cout << n << std::endl;
     if(n)
       error(0) = sqrt(error(0) / n);
     return error;
@@ -128,11 +142,11 @@ int main(int argc, char* argv[])
   write_sweeps(estimate);
   for(int i=1e3;i--;)
   {
-    //estimate = gradient_descent_step(estimate, error_func);
-    estimate = gradient_descent_step(estimate, delta_error_func);
     //if(i%20 == 0)
     std::cout << delta_error_func(estimate)(0) << " ";
     std::cout << error_func(estimate)(0) << " " << estimate.transpose() << std::endl;
+    estimate = gradient_descent_step(estimate, error_func);
+    //estimate = gradient_descent_step(estimate, delta_error_func);
   }
 
   return 0;
