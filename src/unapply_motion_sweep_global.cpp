@@ -128,6 +128,26 @@ int main(int argc, char* argv[])
     return error;
   };
 
+  auto vert_error_func = [&corrected_sweep](auto laserPcloud)
+  {
+    Eigen::Vector2d error{0., 0.};
+    for(auto point: corrected_sweep)
+    {
+      auto [position, distanceUncor] = unapply_calibration(point.point, kitti_probe_calibration().at(point.probeId));
+      if(fabs(position) < .05) // there might be probe id error around position 0
+      {
+        auto estimate0 = liespline::expse3(point.hori_angle * laserPcloud);
+        Eigen::Vector3d point_lidar0 = estimate0 * point.point;
+        auto estimate = liespline::expse3(atan2(point_lidar0(1), point_lidar0(0)) * laserPcloud);
+        Eigen::Vector3d point_lidar = estimate * point.point;
+        auto vert_error = vertical_angle_difference(point_lidar, kitti_probe_calibration().at(point.probeId));
+        error(0) += vert_error * vert_error;
+      }
+    }
+    error(0) = sqrt(error(0));
+    return error;
+  };
+
   auto write_sweeps = [&raw_sweep, &corrected_sweep, &point_error_func](auto laserPcloud)
   {
     std::ofstream file("raw_corrected");
@@ -143,8 +163,10 @@ int main(int argc, char* argv[])
   for(int i=1e3;i--;)
   {
     //if(i%20 == 0)
-    std::cout << delta_error_func(estimate)(0) << " ";
-    std::cout << error_func(estimate)(0) << " " << estimate.transpose() << std::endl;
+    std::cout //<< delta_error_func(estimate)(0) << " "
+              << error_func(estimate)(0) << " "
+              << vert_error_func(estimate)(0) << " "
+              << estimate.transpose() << std::endl;
     estimate = gradient_descent_step(estimate, error_func);
     //estimate = gradient_descent_step(estimate, delta_error_func);
   }
