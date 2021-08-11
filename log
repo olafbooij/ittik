@@ -252,12 +252,14 @@ V-> a well, it is uniform, so the more points you use, the more signal you get
 V-> check neighbors being used
 V-> should compute the correspondences up front
 
-Still not working smoothly... perhaps I should just use the gaps pattern -> determine pattern. Try to match snippets. Use matches to estimate. 
-
--> check out other scenes
   #paste uncalibrated odo scans and raw scans (should write a one liner)
   plot "tmp/00_odo_un.txt" using 2:($2-$6)
   replot "tmp/00_raw_un.txt" using 2:($2-$6)
+
+Still not working smoothly... perhaps I should just use the gaps pattern -> determine pattern. Try to match snippets. Use matches to estimate. 
+V- check for some standard pattern in the gaps -> no, does not seems to be there, perhaps it's dependent on the distance of points
+- determine snippets overlap from motion corrected
+- match snippets
 
 
 V-check error in example
