@@ -248,9 +248,11 @@ V- check uncalib -> checked
 For estimating, let me try to use a more global error function based on neighboring points with approx the same distance measure
 V-define the error
 V-> looking at plots of gaps in raw data, it doesn't look that consistent... uniform noise between 0.0030 and 0.00327 radians. still error is vissible, but perhaps not in all scenes (e.g. driving slower).
--> a well, it is uniform, so the more points you use, the more signal you get
--> check neighbors being used
--> should compute the correspondences up front
+V-> a well, it is uniform, so the more points you use, the more signal you get
+V-> check neighbors being used
+V-> should compute the correspondences up front
+
+Still not working smoothly... perhaps I should just use the gaps pattern -> determine pattern. Try to match snippets. Use matches to estimate. 
 
 -> check out other scenes
   #paste uncalibrated odo scans and raw scans (should write a one liner)
