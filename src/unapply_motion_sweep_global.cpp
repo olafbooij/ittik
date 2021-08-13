@@ -157,18 +157,18 @@ int main(int argc, char* argv[])
         file << (point_error_func(raw_sweep.at(point_i), corrected_sweep.at(point_i), laserPcloud) + raw_sweep.at(point_i).point).transpose() << " 0" << std::endl;
   };
 
-  //Eigen::Matrix<double, 6, 1> estimate; estimate << 0.200362, -0.000649443,  0.00181078, 0.000137006, 0.000205667, 3.21881e-05;
-  Eigen::Matrix<double, 6, 1> estimate; estimate << 0., 0., 0., 0., 0., 0.;
+  Eigen::Matrix<double, 6, 1> estimate; estimate << 0.200362, -0.000649443,  0.00181078, 0.000137006, 0.000205667, 3.21881e-05;
+  //Eigen::Matrix<double, 6, 1> estimate; estimate << 0., 0., 0., 0., 0., 0.;
   write_sweeps(estimate);
   for(int i=1e3;i--;)
   {
     //if(i%20 == 0)
-    std::cout //<< delta_error_func(estimate)(0) << " "
+    std::cout << delta_error_func(estimate)(0) << " "
               << error_func(estimate)(0) << " "
               << vert_error_func(estimate)(0) << " "
               << estimate.transpose() << std::endl;
-    estimate = gradient_descent_step(estimate, error_func);
-    //estimate = gradient_descent_step(estimate, delta_error_func);
+    //estimate = gradient_descent_step(estimate, error_func);
+    estimate = gradient_descent_step(estimate, delta_error_func);
   }
 
   return 0;

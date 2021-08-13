@@ -50,44 +50,17 @@ int main(int argc, char* argv[])
   const auto corrected_sweep = readSweep(corrected_sweep_file);
   assert(corrected_sweep.size() == raw_sweep.size());
 
-  // error based on local angle difference
-  // get 3 points in a row. if approx the same distance and same
-  // position-delta, take difference of position-delta and standard-distance as
-  // error. (...could results in outliers...)
-
-  double prev_position = 0;
-  double prev_distanceUncor = 0;
-  double prev_delta = 0;
-  auto prev_point = corrected_sweep.front();
-  int okay = 0;
-  Eigen::Vector2d error{0., 0.};
-  int n = 0;
-
-  for(int pointI = 0; pointI < corrected_sweep.size(); ++pointI)
+  for(int pointI = 1; pointI < corrected_sweep.size(); ++pointI)
   {
     auto& point = corrected_sweep.at(pointI);
+    auto& prev_= corrected_sweep.at(pointI - 1);
     // determine correspondences based on original cloud
     auto [position, distanceUncor] = unapply_calibration(point.point, kitti_probe_calibration().at(point.probeId));
-    auto delta = position - prev_position;
-    if((fabs(distanceUncor - prev_distanceUncor) > .05) ||
-       ((fabs(delta - prev_delta) > .001) &&
-        (fabs(delta - prev_delta * 2) > .001) &&
-        (fabs(delta * 2 - prev_delta) > .001)
-       )
-      ) // bit of a though one, should maybe make it smaller at the cost of inliers
-      okay = 0;
-    else
-      ++okay;
-    prev_position = position;
-    prev_distanceUncor = distanceUncor;
-    prev_delta = delta;
-
-    if(okay > 1)
-    {
-      std::cout << raw_sweep.at(pointI).probeId << " " << raw_sweep.at(pointI).position << std::endl;
-    }
-
-    prev_point = point;
+    auto [prev_pos, prev_distance] = unapply_calibration(prev_.point, kitti_probe_calibration().at(point.probeId));
+    auto delta = position - prev_pos;
+    if(fabs(distanceUncor - prev_distance) < .5)
+       if(fabs(delta - M_PI / 2000) < .001)
+          std::cout << raw_sweep.at(pointI).probeId << " " << raw_sweep.at(pointI).position << std::endl;
   }
 
   return 0;
