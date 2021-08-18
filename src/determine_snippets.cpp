@@ -51,6 +51,10 @@ int main(int argc, char* argv[])
   assert(corrected_sweep.size() == raw_sweep.size());
 
   // start from position 0.
+  // get for each probe the 1 - 2 - nan fingerprint
+  // somehow match them...
+  // get 5 - 6 - 4 - nan (snipsel)
+  // match unique combi (perhaps 7 snipsels (?))
 
   for(int pointI = 1; pointI < corrected_sweep.size(); ++pointI)
   {
@@ -61,8 +65,12 @@ int main(int argc, char* argv[])
     auto [prev_pos, prev_distance] = unapply_calibration(prev_.point, kitti_probe_calibration().at(point.probeId));
     auto delta = position - prev_pos;
     if(fabs(distanceUncor - prev_distance) < .5)
+    {
        if(fabs(delta - M_PI / 2000) < .001)
-          std::cout << raw_sweep.at(pointI).probeId << " " << raw_sweep.at(pointI).position << std::endl;
+          std::cout << "1 " << raw_sweep.at(pointI).probeId << " " << raw_sweep.at(pointI).position << std::endl;
+       if(fabs(delta - M_PI / 1000) < .001)
+          std::cout << "2 " << raw_sweep.at(pointI).probeId << " " << raw_sweep.at(pointI).position << std::endl;
+    }
   }
 
   return 0;
