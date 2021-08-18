@@ -50,6 +50,8 @@ int main(int argc, char* argv[])
   const auto corrected_sweep = readSweep(corrected_sweep_file);
   assert(corrected_sweep.size() == raw_sweep.size());
 
+  // start from position 0.
+
   for(int pointI = 1; pointI < corrected_sweep.size(); ++pointI)
   {
     auto& point = corrected_sweep.at(pointI);

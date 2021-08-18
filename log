@@ -260,6 +260,7 @@ Still not working smoothly... perhaps I should just use the gaps pattern -> dete
 V- check for some standard pattern in the gaps -> no, does not seems to be there, perhaps it's dependent on the distance of points
 - determine snippets overlap from motion corrected
 - match snippets
+V- check if pose can be estimated from just (some) ray directions  -> yes they can (for the 2011_09_30_drive_0016_extract 0000000003.txt at least)
 
 
 V-check error in example
