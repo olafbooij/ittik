@@ -7,6 +7,7 @@
 #include"util.hpp"
 #include"unapply_calibration_sweep.hpp"
 #include"unapply_calibration_sweep_Triess.hpp"
+#include"apply_calibration.hpp"
 
 #include"liespline/se3_plot.hpp"
 
@@ -37,6 +38,18 @@ auto readSweep(auto&& file)
   return points;
 }
 
+auto replace_raw_with_exact(auto raw_sweep)
+{
+  std::vector<Point> exact_sweep;
+  for(auto point: raw_sweep)
+  {
+    double stepangle = 2 * M_PI / 4000;
+    auto exact_position = std::round(point.position / stepangle) * stepangle;
+    Eigen::Vector3d exact_point = apply_calibration(exact_position, point.distanceUncor, kitti_probe_calibration().at(point.probeId)); // hmmm, I do noknow the distance of the not motion corrected one.... nasty
+    exact_sweep.emplace_back(Point{exact_point, point.probeId, atan2(exact_point(1), exact_point(0)), exact_position, point.distanceUncor});
+  }
+  return exact_sweep;
+}
 
 int main(int argc, char* argv[])
 {
@@ -45,7 +58,8 @@ int main(int argc, char* argv[])
   std::ifstream corrected_sweep_file(argv[2]);
   //std::ofstream outFile(argv[3]);
 
-  const auto raw_sweep = readSweep(raw_sweep_file);
+  //const auto raw_sweep = readSweep(raw_sweep_file);
+  const auto raw_sweep = replace_raw_with_exact(readSweep(raw_sweep_file));
   assert(! raw_sweep.empty());
   const auto corrected_sweep = readSweep(corrected_sweep_file);
   assert(corrected_sweep.size() == raw_sweep.size());
