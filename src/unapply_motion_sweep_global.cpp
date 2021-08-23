@@ -58,8 +58,8 @@ int main(int argc, char* argv[])
   std::ifstream corrected_sweep_file(argv[2]);
   //std::ofstream outFile(argv[3]);
 
-  //const auto raw_sweep = readSweep(raw_sweep_file);
-  const auto raw_sweep = replace_raw_with_exact(readSweep(raw_sweep_file));
+  const auto raw_sweep = readSweep(raw_sweep_file);
+  //const auto raw_sweep = replace_raw_with_exact(readSweep(raw_sweep_file));
   assert(! raw_sweep.empty());
   const auto corrected_sweep = readSweep(corrected_sweep_file);
   assert(corrected_sweep.size() == raw_sweep.size());
@@ -68,10 +68,17 @@ int main(int argc, char* argv[])
   // iteratively estimate
   auto point_error_func = [](auto raw_point, auto corrected_point, auto laserPcloud)
   {
-    auto estimate = liespline::expse3(raw_point.hori_angle * laserPcloud);
+    auto estimate = liespline::expse3(raw_point.hori_angle * laserPcloud); // FIXME do not know raw_point.hori_angle
     Eigen::Vector3d corrected_point_lidar = estimate * corrected_point.point;
     //Eigen::Vector3d error = corrected_point_lidar - raw_point.point;
-    Eigen::Matrix<double, 1, 1> error; error(0) = acos(std::clamp(corrected_point_lidar.normalized().dot(raw_point.point.normalized()), -1., 1.));
+    //Eigen::Matrix<double, 1, 1> error; error(0) = acos(std::clamp(corrected_point_lidar.normalized().dot(raw_point.point.normalized()), -1., 1.));
+    auto [horizontal, _] = unapply_calibration(corrected_point_lidar, kitti_probe_calibration().at(raw_point.probeId));
+    auto cal = kitti_probe_calibration().at(raw_point.probeId);
+    double hori_error = horizontal - raw_point.position;
+    if(hori_error < -M_PI) hori_error += 2 * M_PI;
+    if(hori_error >  M_PI) hori_error -= 2 * M_PI;
+    Eigen::Vector2d error{hori_error,
+                          cal.vertCorrection - vertical_angle(corrected_point_lidar, cal)};
     return error;
   };
 
@@ -81,6 +88,7 @@ int main(int argc, char* argv[])
     int n = 0;
     for(auto point_i = 0; point_i < raw_sweep.size(); ++point_i)
       if(point_i % 10 == 0)
+      if(fabs(raw_sweep.at(point_i).position) > .05) // there might be probe id error around position 0
     {
       auto point_error = point_error_func(raw_sweep.at(point_i), corrected_sweep.at(point_i), laserPcloud);
       error(0) += point_error.squaredNorm();
