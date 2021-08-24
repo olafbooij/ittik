@@ -68,13 +68,17 @@ int main(int argc, char* argv[])
   // iteratively estimate
   auto point_error_func = [](auto raw_point, auto corrected_point, auto laserPcloud)
   {
-    auto estimate = liespline::expse3(raw_point.hori_angle * laserPcloud); // FIXME do not know raw_point.hori_angle
+    auto estimate0 = liespline::expse3(corrected_point.hori_angle * laserPcloud);
+    Eigen::Vector3d point_lidar0 = estimate0 * corrected_point.point;
+    auto estimate = liespline::expse3(atan2(point_lidar0(1), point_lidar0(0)) * laserPcloud);
     Eigen::Vector3d corrected_point_lidar = estimate * corrected_point.point;
     //Eigen::Vector3d error = corrected_point_lidar - raw_point.point;
     //Eigen::Matrix<double, 1, 1> error; error(0) = acos(std::clamp(corrected_point_lidar.normalized().dot(raw_point.point.normalized()), -1., 1.));
     auto [horizontal, _] = unapply_calibration(corrected_point_lidar, kitti_probe_calibration().at(raw_point.probeId));
     auto cal = kitti_probe_calibration().at(raw_point.probeId);
-    double hori_error = horizontal - raw_point.position;
+    double stepangle = 2 * M_PI / 4000;
+    auto exact_position = std::round(raw_point.position / stepangle) * stepangle;
+    double hori_error = horizontal - exact_position;
     if(hori_error < -M_PI) hori_error += 2 * M_PI;
     if(hori_error >  M_PI) hori_error -= 2 * M_PI;
     Eigen::Vector2d error{hori_error,
