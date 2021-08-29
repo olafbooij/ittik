@@ -11,9 +11,13 @@ int main(int argc, char* argv[])
     pose = cam_p_lidar.inverse() * pose * cam_p_lidar;
 
   std::ofstream file(argv[3]);
+  auto& prev_pose = poses.front();
   for(auto& pose: poses)
+  {
     liespline::plot_se3(pose, file, .05);
-
+    std::cout << liespline::logse3(prev_pose.inverse() * pose).transpose() / (2 * M_PI) << std::endl;
+    prev_pose = pose;
+  }
   return 0;
 }
 

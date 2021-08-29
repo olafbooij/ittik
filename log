@@ -262,7 +262,7 @@ V- check for some standard pattern in the gaps -> no, does not seems to be there
 - match snippets
 V- check if pose can be estimated from just (some) ray directions  -> yes they can (for the 2011_09_30_drive_0016_extract 0000000003.txt at least)
 V- check if pose can be estimated by matching with predicted directions ->  yes, seems to work, but still uses raw distance. Let me try to use position, and vert_angle, instead of 3d points -> yes works (slower conversion), though still using some raw data... -> now using only raw probeId and discetized position
-- check if pose is the same as gt poses
+V- check if pose is the same as gt poses -> hmmm, 4% different, should be doable
 - check other scans
 
 
