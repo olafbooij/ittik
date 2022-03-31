@@ -261,3 +261,7 @@ V-> looking at plots of gaps in raw data, it doesn't look that consistent... uni
 V-check error in example
 V-...minimize
   -> get's stuck quite quickly with just neighboring points
+
+object detection
+-> wow, the object detection point clouds are actually not motion corrected (well at least that's the case for the training ones). Should check the testing ones.
+-> testing too. Let's convert all 
