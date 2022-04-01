@@ -13,7 +13,7 @@ Eigen::Vector3d apply_calibration(const double position, const double distanceUn
   if(distanceUncor == 0) // error value
     return {.0, .0, .0};
   auto distance = distanceUncor + cal.distCorrection;
-  auto rotCorrected = position - cal.rotCorrection;
+  auto rotCorrected = position + cal.rotCorrection;
   double cosRotAngle = cos(rotCorrected);
   double sinRotAngle = sin(rotCorrected);
 
@@ -22,8 +22,8 @@ Eigen::Vector3d apply_calibration(const double position, const double distanceUn
   double xyDistance = distance * cosVertAngle;
 
   Eigen::Vector3d point;
-  point(0) = xyDistance * sinRotAngle - cal.horizOffsetCorrection * cosRotAngle;
-  point(1) = xyDistance * cosRotAngle + cal.horizOffsetCorrection * sinRotAngle;
+  point(0) = xyDistance * cosRotAngle - cal.horizOffsetCorrection * sinRotAngle;
+  point(1) = xyDistance * sinRotAngle + cal.horizOffsetCorrection * cosRotAngle;
   point(2) = distance * sinVertAngle + cal.vertOffsetCorrection;
 
   return point;

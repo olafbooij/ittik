@@ -248,14 +248,22 @@ V- check uncalib -> checked
 For estimating, let me try to use a more global error function based on neighboring points with approx the same distance measure
 V-define the error
 V-> looking at plots of gaps in raw data, it doesn't look that consistent... uniform noise between 0.0030 and 0.00327 radians. still error is vissible, but perhaps not in all scenes (e.g. driving slower).
--> a well, it is uniform, so the more points you use, the more signal you get
--> check neighbors being used
--> should compute the correspondences up front
+V-> a well, it is uniform, so the more points you use, the more signal you get
+V-> check neighbors being used
+V-> should compute the correspondences up front
 
--> check out other scenes
   #paste uncalibrated odo scans and raw scans (should write a one liner)
   plot "tmp/00_odo_un.txt" using 2:($2-$6)
   replot "tmp/00_raw_un.txt" using 2:($2-$6)
+
+Still not working smoothly... perhaps I should just use the gaps pattern -> determine pattern. Try to match snippets. Use matches to estimate. 
+V- check for some standard pattern in the gaps -> no, does not seems to be there, perhaps it's dependent on the distance of points
+- determine snippets overlap from motion corrected
+- match snippets
+V- check if pose can be estimated from just (some) ray directions  -> yes they can (for the 2011_09_30_drive_0016_extract 0000000003.txt at least)
+V- check if pose can be estimated by matching with predicted directions ->  yes, seems to work, but still uses raw distance. Let me try to use position, and vert_angle, instead of 3d points -> yes works (slower conversion), though still using some raw data... -> now using only raw probeId and discetized position
+V- check if pose is the same as gt poses -> hmmm, 4% different, should be doable
+- check other scans
 
 
 V-check error in example
