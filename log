@@ -270,3 +270,8 @@ V- check if pose is the same as gt poses -> hmmm, 4% different, should be doable
 V-check error in example
 V-...minimize
   -> get's stuck quite quickly with just neighboring points
+
+object detection
+-> wow, the object detection point clouds are actually not motion corrected (well at least that's the case for the training ones). Should check the testing ones.
+-> testing too. Let's convert all, takes 10 hours on zwoerd and 7gb (2.4gb zipped) ... just fits on mist... let's do it there
+
