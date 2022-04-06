@@ -8,11 +8,16 @@ The following figure shows what is meant with original dense LiDAR sensor readin
 
 <img src="./doc/plots/sparse_vs_dense/sparse_vs_dense.png">
 
-All scans the Odometry training sets have been processed. The discretized raw scan coordinates are available as <a href='http://www.beteuterd.nl/ittik'>gzipped tar file</a>. Here you can also find images plotted using the raw scan coordinates colored using the <a href='http://semantic-kitti.org/'>semantic kitti</a> labels.
+All scans the 3D Object detection sets and the Odometry training sets have been processed. The discretized raw scan coordinates are made available here:
 
-The scans for the 3d object detection sets will follow soon.
+  <a href='http://www.beteuterd.nl/ittik/odo_sweep_coordinates.tgz'>Odometry training sets (gzip tar file 3.6GB)</a>.
+  <a href='http://www.beteuterd.nl/ittik/object_sweep_coordinates.tgz'>3D Object detection sets (gzip tar file 2.4 GB)</a>.
+
+There's also <a href='http://www.beteuterd.nl/ittik/odo_sweep_images'>images plotted using the raw scan coordinates colored</a> using the <a href='http://semantic-kitti.org/'>semantic kitti</a> labels.
+
+The file format for the scan coordinates is binary in which for each point there's two 16-bit unsigned integer (uint16_t), the first corresponding to the horizontal coordinate and second to the vertical coordinate. See e.g. [/src/plot_range_image.cpp](./src/plot_range_image.cpp) to use the coordinates to plot a range image.
 
 
-Unfortunately, ITTIK cannot deal with motion corrected point-clouds (yet...). This is for example the case for the Odometry test sets.
+Unfortunately, ITTIK cannot deal with KITTI's motion corrected point-clouds (yet...). This is for example the case for the Odometry test sets.
 
 Btw, the code is not that readable (sorry...) and uses some c++20 features (I used GCC 8.3.0 with `-std=c++2a -fconcepts`).
