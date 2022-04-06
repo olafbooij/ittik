@@ -11,6 +11,7 @@ The following figure shows what is meant with original dense LiDAR sensor readin
 All scans the 3D Object detection sets and the Odometry training sets have been processed. The discretized raw scan coordinates are made available here:
 
   <a href='http://www.beteuterd.nl/ittik/odo_sweep_coordinates.tgz'>Odometry training sets (gzip tar file 3.6GB)</a>.
+
   <a href='http://www.beteuterd.nl/ittik/object_sweep_coordinates.tgz'>3D Object detection sets (gzip tar file 2.4 GB)</a>.
 
 There's also <a href='http://www.beteuterd.nl/ittik/odo_sweep_images'>images plotted using the raw scan coordinates colored</a> using the <a href='http://semantic-kitti.org/'>semantic kitti</a> labels.
