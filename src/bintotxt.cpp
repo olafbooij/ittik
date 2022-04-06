@@ -11,8 +11,8 @@ int main(int argc, char* argv[])
   {
     Eigen::Vector3f p;
     float refl;
-    binFile.read(static_cast<char*>(&p), 3 * sizeof(float));
-    binFile.read(static_cast<char*>(&refl), sizeof(float));
+    binFile.read(reinterpret_cast<char*>(&p), 3 * sizeof(float));
+    binFile.read(reinterpret_cast<char*>(&refl), sizeof(float));
     if(binFile.good())
       txtFile << p.transpose() << " " << refl << std::endl;
   }
